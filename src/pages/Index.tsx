@@ -59,7 +59,7 @@ const Index = () => {
             <div>
               <SlideIn className="mb-6">
                 <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                  Introducing TrustScore
+                  Introducing Reworx
                 </div>
               </SlideIn>
               
@@ -72,7 +72,7 @@ const Index = () => {
               
               <FadeIn delay={400} className="mt-6">
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md">
-                  TrustScore measures your e-commerce reliability, allowing partner companies to offer you exclusive benefits based on your shopping habits.
+                  Reworx measures your e-commerce reliability, allowing partner companies to offer you exclusive benefits based on your shopping habits.
                 </p>
               </FadeIn>
               
@@ -100,9 +100,7 @@ const Index = () => {
                         <h3 className="font-bold text-lg">Trust Score</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Account overview</p>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">TS</span>
-                      </div>
+                      <img src="/lovable-uploads/4faf26ec-4a33-45c3-a3fe-964fab70e056.png" alt="Reworx" className="w-10 h-10" />
                     </div>
                     
                     <div className="flex justify-between items-end">
@@ -166,7 +164,7 @@ const Index = () => {
       <section className="py-20 bg-gray-50 dark:bg-gray-900/30">
         <div className="container max-w-6xl mx-auto px-4 md:px-0">
           <FadeIn className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How TrustScore Benefits You</h2>
+            <h2 className="text-3xl font-bold mb-4">How Reworx Benefits You</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Leverage your shopping habits to unlock exclusive benefits and offers from our partner companies.
             </p>
@@ -194,7 +192,7 @@ const Index = () => {
           <FadeIn className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">For Partner Companies</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              TrustScore helps businesses identify reliable customers, reducing fraud and enhancing user retention.
+              Reworx helps businesses identify reliable customers, reducing fraud and enhancing user retention.
             </p>
           </FadeIn>
           
@@ -218,7 +216,7 @@ const Index = () => {
             <FadeIn>
               <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
               <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto mb-8">
-                Create your TrustScore account and start connecting your e-commerce platforms to unlock exclusive benefits.
+                Create your Reworx account and start connecting your e-commerce platforms to unlock exclusive benefits.
               </p>
               <Button 
                 size="lg"

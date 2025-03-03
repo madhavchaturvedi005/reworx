@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Predefined demo user
 const DEMO_USER: User = {
   id: 'demo-user-1',
-  email: 'demo@trustscore.com',
+  email: 'demo@reworx.com',
   name: 'Demo User'
 };
 
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
     // Demo credentials check
-    if (email === 'demo@trustscore.com' && password === 'password123') {
+    if (email === 'demo@reworx.com' && password === 'password123') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('user', JSON.stringify(DEMO_USER));
       

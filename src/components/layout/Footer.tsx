@@ -8,13 +8,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">TS</span>
-              </div>
-              <span className="font-semibold text-xl tracking-tight">TrustScore</span>
+              <img src="/lovable-uploads/4faf26ec-4a33-45c3-a3fe-964fab70e056.png" alt="Reworx" className="w-8 h-8" />
+              <span className="font-semibold text-xl tracking-tight">Reworx</span>
             </Link>
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-md">
-              Building trust in e-commerce one purchase at a time. TrustScore helps shoppers leverage 
+              Building trust in e-commerce one purchase at a time. Reworx helps shoppers leverage 
               their shopping habits to gain exclusive benefits while helping businesses enhance user retention.
             </p>
           </div>
@@ -64,7 +62,7 @@ const Footer = () => {
         
         <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} TrustScore. All rights reserved.
+            &copy; {new Date().getFullYear()} Reworx. All rights reserved.
           </p>
           
           <div className="mt-4 md:mt-0 flex items-center space-x-4">

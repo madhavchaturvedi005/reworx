@@ -81,10 +81,8 @@ const Navbar = () => {
           to="/" 
           className="flex items-center gap-2 transition-opacity duration-300 hover:opacity-80"
         >
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">TS</span>
-          </div>
-          <span className="font-semibold text-xl tracking-tight">TrustScore</span>
+          <img src="/lovable-uploads/4faf26ec-4a33-45c3-a3fe-964fab70e056.png" alt="Reworx" className="w-8 h-8" />
+          <span className="font-semibold text-xl tracking-tight">Reworx</span>
         </Link>
         
         <nav className="hidden md:flex items-center space-x-1">

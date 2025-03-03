@@ -38,7 +38,7 @@ const Login = () => {
       if (success) {
         toast({
           title: 'Login Successful',
-          description: 'Welcome back to TrustScore!',
+          description: 'Welcome back to Reworx!',
         });
         
         navigate('/dashboard');
@@ -59,10 +59,8 @@ const Login = () => {
         <div className="text-center mb-8">
           <SlideIn>
             <div className="inline-flex items-center gap-2 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-white font-semibold text-lg">TS</span>
-              </div>
-              <span className="font-semibold text-2xl tracking-tight">TrustScore</span>
+              <img src="/lovable-uploads/4faf26ec-4a33-45c3-a3fe-964fab70e056.png" alt="Reworx" className="w-10 h-10" />
+              <span className="font-semibold text-2xl tracking-tight">Reworx</span>
             </div>
             <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
             <p className="text-gray-500 dark:text-gray-400">
@@ -167,7 +165,7 @@ const Login = () => {
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <div>
-                  <span className="font-medium">Email:</span> demo@trustscore.com
+                  <span className="font-medium">Email:</span> demo@reworx.com
                 </div>
                 <div>
                   <span className="font-medium">Password:</span> password123
@@ -179,7 +177,7 @@ const Login = () => {
         
         <FadeIn delay={200}>
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-8">
-            © 2023 TrustScore. All rights reserved.
+            © {new Date().getFullYear()} Reworx. All rights reserved.
           </p>
         </FadeIn>
       </div>
