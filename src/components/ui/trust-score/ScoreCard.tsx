@@ -1,125 +1,161 @@
 
-import { useState, useEffect } from 'react';
-import { UserScore } from '@/utils/trustScore';
-import { Progress } from "@/components/ui/progress";
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { UserScore, getScoreLevel } from '@/utils/trustScore';
 import { cn } from '@/lib/utils';
+import { ClipboardCopy, Info, RefreshCw } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ScoreCardProps {
   score: UserScore;
   className?: string;
+  onRefresh?: () => void;
 }
 
-const ScoreCard = ({ score, className }: ScoreCardProps) => {
-  const [progressValue, setProgressValue] = useState(0);
-  
-  useEffect(() => {
-    // Animate the progress value
-    const timer = setTimeout(() => {
-      setProgressValue(score.score);
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, [score.score]);
-  
-  // Score label based on level
-  const getLevelLabel = (level: 'low' | 'medium' | 'high') => {
-    switch (level) {
-      case 'low':
-        return 'Needs Improvement';
-      case 'medium':
-        return 'Good Standing';
-      case 'high':
-        return 'Excellent';
-      default:
-        return '';
-    }
-  };
-  
+const ScoreCard = ({ score, className, onRefresh }: ScoreCardProps) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
+
   // Get color based on score level
-  const getLevelColor = (level: 'low' | 'medium' | 'high') => {
+  const getScoreColor = (level: 'low' | 'medium' | 'high') => {
     switch (level) {
       case 'low':
-        return 'text-trust-low';
+        return 'text-red-500';
       case 'medium':
-        return 'text-trust-medium';
+        return 'text-yellow-500';
       case 'high':
-        return 'text-trust-high';
+        return 'text-green-500';
       default:
-        return '';
+        return 'text-blue-500';
     }
   };
-  
-  // Get progress color based on score level
-  const getProgressColor = (level: 'low' | 'medium' | 'high') => {
+
+  // Get background color based on score level
+  const getScoreBgColor = (level: 'low' | 'medium' | 'high') => {
     switch (level) {
       case 'low':
-        return 'bg-trust-low';
+        return 'bg-red-100 dark:bg-red-950/30';
       case 'medium':
-        return 'bg-trust-medium';
+        return 'bg-yellow-100 dark:bg-yellow-950/30';
       case 'high':
-        return 'bg-trust-high';
+        return 'bg-green-100 dark:bg-green-950/30';
       default:
-        return '';
+        return 'bg-blue-100 dark:bg-blue-950/30';
     }
   };
-  
+
+  // Handle refresh button click
+  const handleRefresh = () => {
+    if (onRefresh) {
+      setIsRefreshing(true);
+      
+      // Simulate API delay
+      setTimeout(() => {
+        onRefresh();
+        setIsRefreshing(false);
+        
+        toast({
+          title: 'Score Refreshed',
+          description: 'Your trust score has been updated with the latest data.',
+        });
+      }, 1500);
+    }
+  };
+
+  // Handle copy score button click
+  const handleCopyScore = () => {
+    navigator.clipboard.writeText(score.score.toString());
+    
+    toast({
+      title: 'Score Copied',
+      description: 'Your trust score has been copied to the clipboard.',
+    });
+  };
+
   return (
-    <div 
-      className={cn(
-        "p-6 rounded-2xl glass-card overflow-hidden scale-on-hover",
-        className
-      )}
-    >
-      <div className="flex flex-col items-center">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
-          Your Trust Score
-        </h3>
-        
-        <div className="flex items-center justify-center w-32 h-32 rounded-full border-4 border-gray-100 dark:border-gray-800 mb-6 relative">
-          <div className="text-center">
-            <span className="block text-4xl font-bold">{score.score}</span>
-            <span 
-              className={cn(
-                "text-sm font-medium",
-                getLevelColor(score.level)
-              )}
-            >
-              {getLevelLabel(score.level)}
-            </span>
+    <Card className={cn("overflow-hidden", className)}>
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-medium">Your Trust Score</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Based on {score.orderHistory.total} orders
+            </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
+            Refresh
+          </Button>
         </div>
         
-        <div className="w-full space-y-3 mb-6">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Poor</span>
-            <span className="text-gray-500 dark:text-gray-400">Excellent</span>
-          </div>
-          <Progress 
-            value={progressValue} 
-            className="h-2 bg-gray-100 dark:bg-gray-800"
-            indicatorClassName={cn(
-              "transition-all duration-1000 ease-out",
-              getProgressColor(score.level)
-            )}
-          />
+        <div className="flex items-end gap-2 mb-2">
+          <h2 className={cn("text-4xl font-bold", getScoreColor(score.level))}>
+            {score.score}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">/ 100</p>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 ml-1 mb-1.5">
+                  <Info className="h-4 w-4" />
+                  <span className="sr-only">Info</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-sm max-w-xs">
+                  Your trust score is calculated based on your order history, 
+                  acceptance rate, and platform activity.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
-        <div className="w-full grid grid-cols-3 gap-3">
-          <div className="text-center">
-            <div className="text-xl font-bold">{score.orderHistory.total}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Total Orders</div>
+        <Progress 
+          value={score.score} 
+          className="h-2 mb-4"
+        />
+        
+        <div className={cn(
+          "flex justify-between items-center p-3 rounded-md mt-4",
+          getScoreBgColor(score.level)
+        )}>
+          <div>
+            <p className="text-sm font-medium">Trust Level: {score.level.charAt(0).toUpperCase() + score.level.slice(1)}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">
+              {score.level === 'high' 
+                ? 'Excellent! You have a great trust score.' 
+                : score.level === 'medium' 
+                  ? 'Good! Your trust score is average.' 
+                  : 'Improve your trust score by accepting more orders.'}
+            </p>
           </div>
-          <div className="text-center">
-            <div className="text-xl font-bold">{score.orderHistory.accepted}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Accepted</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl font-bold">{score.orderHistory.cancelled}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Cancelled</div>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8"
+            onClick={handleCopyScore}
+          >
+            <ClipboardCopy className="h-3.5 w-3.5 mr-1" />
+            Copy
+          </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
