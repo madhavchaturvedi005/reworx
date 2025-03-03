@@ -112,7 +112,7 @@ const Integration = () => {
               onClick={() => {
                 toast({
                   title: 'Request Received',
-                  description: 'Thanks for letting us know! We'll add more platforms soon.',
+                  description: "Thanks for letting us know! We'll add more platforms soon.",
                 });
               }}
             >
