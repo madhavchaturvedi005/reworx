@@ -2,14 +2,36 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
+  // How to use steps
+  const howToUseSteps = [
+    {
+      title: 'Create an Account',
+      description: 'Sign up for a Reworx account to get started with your shopping benefits journey.'
+    },
+    {
+      title: 'Connect Your Platforms',
+      description: 'Link your e-commerce shopping accounts like Amazon, Flipkart, and more.'
+    },
+    {
+      title: 'Build Your Score',
+      description: 'Your shopping patterns generate a trust score that unlocks exclusive benefits.'
+    },
+    {
+      title: 'Enjoy the Benefits',
+      description: 'Get access to special discounts, extended trial periods, and preferential rates.'
+    },
+  ];
   
   // Platform benefits data
   const benefits = [
@@ -45,7 +67,11 @@ const Index = () => {
   
   // Handle get started click
   const handleGetStarted = () => {
-    navigate('/dashboard');
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login');
+    }
   };
   
   return (
@@ -93,64 +119,42 @@ const Index = () => {
                 <div className="absolute -top-10 -left-10 w-64 h-64 bg-primary/10 rounded-full filter blur-3xl"></div>
                 <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-primary/5 rounded-full filter blur-2xl"></div>
                 
-                <div className="relative glass-card rounded-2xl overflow-hidden shadow-xl animate-float">
+                <div className="relative glass-card rounded-2xl overflow-hidden shadow-xl">
                   <div className="bg-primary/5 p-6 border-b border-gray-100 dark:border-gray-800">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="font-bold text-lg">Trust Score</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Account overview</p>
+                        <h3 className="font-bold text-lg">How To Use Reworx</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Simple steps to get started</p>
                       </div>
                       <img src="/lovable-uploads/4faf26ec-4a33-45c3-a3fe-964fab70e056.png" alt="Reworx" className="w-10 h-10" />
-                    </div>
-                    
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Your Score</p>
-                        <p className="text-4xl font-bold">85</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-green-600 font-medium">Excellent</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Top 15%</p>
-                      </div>
                     </div>
                   </div>
                   
                   <div className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-white dark:bg-gray-800 rounded-md flex items-center justify-center shadow-sm">
-                            <img 
-                              src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png" 
-                              alt="Amazon" 
-                              className="w-6 h-auto object-contain"
-                            />
+                    <div className="space-y-5">
+                      {howToUseSteps.map((step, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-primary text-sm font-semibold">{index + 1}</span>
+                            </div>
                           </div>
-                          <span className="font-medium">Amazon</span>
-                        </div>
-                        <span className="text-green-600 text-sm">Connected</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-white dark:bg-gray-800 rounded-md flex items-center justify-center shadow-sm">
-                            <img 
-                              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Flipkart_logo.svg/1920px-Flipkart_logo.svg.png"
-                              alt="Flipkart" 
-                              className="w-6 h-auto object-contain"
-                            />
+                          <div>
+                            <h4 className="font-medium text-base">{step.title}</h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{step.description}</p>
                           </div>
-                          <span className="font-medium">Flipkart</span>
                         </div>
-                        <Button size="sm" className="h-7 text-xs px-3 rounded-full">Connect</Button>
-                      </div>
+                      ))}
                     </div>
                     
                     <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Master Key</span>
-                        <span className="font-mono text-sm">XXXX-XXXX-XXXX</span>
-                      </div>
+                      <Button 
+                        onClick={handleGetStarted} 
+                        className="w-full"
+                      >
+                        Start Now
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

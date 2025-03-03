@@ -34,19 +34,19 @@ export const availablePlatforms: Platform[] = [
   {
     id: 'flipkart',
     name: 'Flipkart',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Flipkart_logo.svg/1920px-Flipkart_logo.svg.png',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Emblem.png',
     connected: false,
   },
   {
-    id: 'walmart',
-    name: 'Walmart',
-    logo: 'https://logos-world.net/wp-content/uploads/2020/11/Walmart-Logo.png',
+    id: 'meesho',
+    name: 'Meesho',
+    logo: 'https://www.meesho.com/favicon.ico',
     connected: false,
   },
   {
-    id: 'ebay',
-    name: 'eBay',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/EBay_logo.svg/1200px-EBay_logo.svg.png',
+    id: 'myntra',
+    name: 'Myntra',
+    logo: 'https://constant.myntassets.com/web/assets/img/icon-96x96.png',
     connected: false,
   },
 ];
