@@ -20,7 +20,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAuthenticated, userEmail, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   
   // Handle scroll detection for navbar appearance
   useEffect(() => {
@@ -52,10 +52,10 @@ const Navbar = () => {
   };
   
   const getUserInitials = () => {
-    if (!userEmail) return 'U';
+    if (!user) return 'U';
     
     // Get the first part of the email (before @)
-    const name = userEmail.split('@')[0];
+    const name = user.email.split('@')[0];
     
     // If name contains dots or underscores, treat them as spaces
     const parts = name.replace(/[._]/g, ' ').split(' ');
@@ -117,7 +117,7 @@ const Navbar = () => {
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
                     <span>My Account</span>
-                    <span className="text-xs text-muted-foreground truncate">{userEmail}</span>
+                    <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -157,7 +157,7 @@ const Navbar = () => {
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
                     <span>My Account</span>
-                    <span className="text-xs text-muted-foreground truncate">{userEmail}</span>
+                    <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

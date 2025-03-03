@@ -1,6 +1,4 @@
-
-import { useState, useEffect } from 'react';
-import { getUserScore, UserScore } from '@/utils/trustScore';
+import { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ScoreCard from '@/components/ui/trust-score/ScoreCard';
@@ -11,38 +9,19 @@ import { RefreshCw } from 'lucide-react';
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
-  const [userScore, setUserScore] = useState<UserScore | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
+  const { userScore } = useAuth();
   
-  // Fetch user score on component mount
-  useEffect(() => {
-    fetchUserScore();
-  }, []);
-  
-  // Fetch user score
-  const fetchUserScore = () => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const score = getUserScore();
-      setUserScore(score);
-      setIsLoading(false);
-    }, 1000);
-  };
-  
-  // Handle refresh score
+  // Handle refresh score (just visual, doesn't actually change the score)
   const handleRefreshScore = () => {
     setIsRefreshing(true);
     
-    // Simulate API call
+    // Simulate API call but don't actually change the score
     setTimeout(() => {
-      const score = getUserScore();
-      setUserScore(score);
       setIsRefreshing(false);
       
       toast({
@@ -52,32 +31,32 @@ const Dashboard = () => {
     }, 1500);
   };
   
-  // Handle connect platform
+  // Handle connect platform (updates UI but keeps the same base score)
   const handleConnectPlatform = (platform: any) => {
     if (userScore) {
       const updatedPlatforms = userScore.platforms.map(p => 
         p.id === platform.id ? { ...p, connected: true, lastSynced: new Date().toISOString() } : p
       );
       
-      setUserScore({
-        ...userScore,
-        platforms: updatedPlatforms,
-        score: Math.min(userScore.score + 5, 95),
+      // This doesn't actually change the persistent score in AuthContext
+      toast({
+        title: 'Platform Connected',
+        description: `Successfully connected to ${platform.name}.`,
       });
     }
   };
   
-  // Handle disconnect platform
+  // Handle disconnect platform (updates UI but keeps the same base score)
   const handleDisconnectPlatform = (platform: any) => {
     if (userScore) {
       const updatedPlatforms = userScore.platforms.map(p => 
         p.id === platform.id ? { ...p, connected: false, lastSynced: undefined } : p
       );
       
-      setUserScore({
-        ...userScore,
-        platforms: updatedPlatforms,
-        score: Math.max(userScore.score - 5, 25),
+      // This doesn't actually change the persistent score in AuthContext
+      toast({
+        title: 'Platform Disconnected',
+        description: `Successfully disconnected from ${platform.name}.`,
       });
     }
   };
@@ -99,7 +78,7 @@ const Dashboard = () => {
             <FadeIn delay={200}>
               <Button 
                 onClick={handleRefreshScore} 
-                disabled={isRefreshing || isLoading}
+                disabled={isRefreshing || !userScore}
                 className="flex items-center gap-2"
               >
                 <RefreshCw className={isRefreshing ? "animate-spin w-4 h-4" : "w-4 h-4"} />
@@ -108,7 +87,7 @@ const Dashboard = () => {
             </FadeIn>
           </div>
           
-          {isLoading ? (
+          {!userScore ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {[...Array(3)].map((_, index) => (
                 <div 
@@ -118,7 +97,7 @@ const Dashboard = () => {
                 ></div>
               ))}
             </div>
-          ) : userScore ? (
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               <SlideIn delay={100}>
                 <ScoreCard score={userScore} />
@@ -154,18 +133,6 @@ const Dashboard = () => {
                   </div>
                 </div>
               </FadeIn>
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-gray-500 dark:text-gray-400">
-                Failed to load trust score. Please try again.
-              </p>
-              <Button 
-                onClick={fetchUserScore} 
-                className="mt-4"
-              >
-                Retry
-              </Button>
             </div>
           )}
         </div>
