@@ -23,9 +23,9 @@ import SlideIn from '@/components/ui/animations/SlideIn';
 const Settings = () => {
   // User data state (simulated)
   const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    masterKey: 'ABCD-1234-EFGH',
+    name: 'Madhav Chaturvedi',
+    email: 'madhavchaturvedimac@gmail.com',
+    masterKey: 'D!S4A-2003-EFGH',
   });
   
   // Settings state
