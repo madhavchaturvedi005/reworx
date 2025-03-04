@@ -3,15 +3,15 @@ import { Trophy, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-// Sample leaderboard data
+// Updated leaderboard data with Indian names
 const leaderboardData = [
-  { id: 1, user: 'User4392', score: 92, position: 1 },
-  { id: 2, user: 'User8571', score: 88, position: 2 },
-  { id: 3, user: 'User1203', score: 85, position: 3 },
-  { id: 4, user: 'User9674', score: 82, position: 4 },
+  { id: 1, user: 'Arjun Sharma', score: 92, position: 1 },
+  { id: 2, user: 'Priya Patel', score: 88, position: 2 },
+  { id: 3, user: 'Vikram Singh', score: 85, position: 3 },
+  { id: 4, user: 'Neha Gupta', score: 82, position: 4 },
   { id: 5, user: 'You', score: 79, position: 5, highlight: true },
-  { id: 6, user: 'User3289', score: 76, position: 6 },
-  { id: 7, user: 'User5467', score: 73, position: 7 },
+  { id: 6, user: 'Rahul Verma', score: 76, position: 6 },
+  { id: 7, user: 'Ananya Mishra', score: 73, position: 7 },
 ];
 
 const LeaderboardCard = () => {
@@ -47,7 +47,7 @@ const LeaderboardCard = () => {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">{item.score}</span>
+                <span className="font-medium">₹{item.score}</span>
                 {item.highlight && (
                   <Badge variant="outline" className="text-xs bg-primary/20">
                     You

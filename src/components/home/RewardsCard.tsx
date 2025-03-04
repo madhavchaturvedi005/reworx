@@ -1,15 +1,17 @@
 
 import { useState } from 'react';
-import { Gift } from 'lucide-react';
+import { Gift, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-// Sample rewards data
+// Updated rewards data with categories
 const rewards = [
   {
     id: 1,
     name: '10% Discount on Next Purchase',
     provider: 'Amazon',
+    category: 'Electronics',
     date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     expiryDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'active',
@@ -19,6 +21,7 @@ const rewards = [
     id: 2,
     name: 'Free Shipping for 3 Months',
     provider: 'Flipkart',
+    category: 'Fashion',
     date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'active',
@@ -26,8 +29,9 @@ const rewards = [
   },
   {
     id: 3,
-    name: '$20 Store Credit',
+    name: '₹200 Store Credit',
     provider: 'Myntra',
+    category: 'Shoes',
     date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
     expiryDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'expired',
@@ -37,11 +41,19 @@ const rewards = [
 
 const RewardsCard = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showCodes, setShowCodes] = useState<Record<number, boolean>>({});
   
   // Format date for display
   const formatDate = (isoDate: string) => {
     const date = new Date(isoDate);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+  
+  const toggleCodeVisibility = (rewardId: number) => {
+    setShowCodes(prev => ({
+      ...prev,
+      [rewardId]: !prev[rewardId]
+    }));
   };
   
   const activeRewards = rewards.filter(reward => reward.status === 'active');
@@ -90,17 +102,37 @@ const RewardsCard = () => {
                           Active
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        From: {reward.provider}
-                      </p>
+                      <div className="flex justify-between mb-2">
+                        <p className="text-sm text-muted-foreground">
+                          From: {reward.provider}
+                        </p>
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                          {reward.category}
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground mb-4">
                         Expires: {formatDate(reward.expiryDate)}
                       </p>
                       
                       <div className="bg-black/5 dark:bg-white/5 p-3 rounded-md">
-                        <p className="text-xs mb-1">Reward Code:</p>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-xs">Reward Code:</p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 px-2" 
+                            onClick={() => toggleCodeVisibility(reward.id)}
+                          >
+                            {showCodes[reward.id] ? (
+                              <EyeOff className="h-3.5 w-3.5 mr-1" />
+                            ) : (
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            {showCodes[reward.id] ? 'Hide' : 'Show'}
+                          </Button>
+                        </div>
                         <p className="font-mono text-center font-bold tracking-wider">
-                          {reward.code}
+                          {showCodes[reward.id] ? reward.code : '••••••••••'}
                         </p>
                       </div>
                     </div>
@@ -119,9 +151,14 @@ const RewardsCard = () => {
                         <p className="text-sm font-medium">{reward.name}</p>
                         <Badge variant="outline" className="text-xs">Expired</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {reward.provider} · Expired on {formatDate(reward.expiryDate)}
-                      </p>
+                      <div className="flex justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          {reward.provider} · Expired on {formatDate(reward.expiryDate)}
+                        </p>
+                        <Badge variant="outline" className="text-xs bg-blue-100/50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                          {reward.category}
+                        </Badge>
+                      </div>
                     </div>
                   ))}
                 </div>
