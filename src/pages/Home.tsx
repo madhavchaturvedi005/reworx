@@ -96,14 +96,6 @@ const Home = () => {
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
-                onClick={handleRefreshScore}
-                className="h-9"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh Score
-              </Button>
-              <Button 
-                variant="outline" 
                 onClick={handleViewAPICredentials}
                 className="h-9"
               >
