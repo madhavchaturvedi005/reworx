@@ -1,4 +1,3 @@
-
 export interface Platform {
   id: string;
   name: string;
@@ -59,7 +58,7 @@ export const availablePlatforms: Platform[] = [
   {
     id: 'myntra',
     name: 'Myntra',
-    logo: 'https://constant.myntassets.com/web/assets/img/icon-96x96.png',
+    logo: 'https://logolook.net/wp-content/uploads/2023/01/Myntra-Emblem-2048x1152.png',
     connected: false,
   },
   {
@@ -134,11 +133,10 @@ export const getUserScore = (): UserScore => {
   return generateRandomScore();
 };
 
-// Gmail OAuth URL generation
+// Gmail OAuth URL generation with real client ID (to be updated)
 export const generateGmailOAuthUrl = (): string => {
   // In a real implementation, this would create a proper OAuth URL with your client ID
-  // For demo purposes, we're returning a mock URL
-  const clientId = "your-google-client-id";
+  const clientId = "your-google-client-id"; // Replace with your actual Google client ID
   const redirectUri = encodeURIComponent(window.location.origin + "/auth/gmail/callback");
   const scope = encodeURIComponent("https://www.googleapis.com/auth/gmail.readonly");
   
