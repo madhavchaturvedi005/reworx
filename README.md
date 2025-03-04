@@ -1,54 +1,22 @@
-# Welcome to your Lovable project
+# E-Commerce Credit Score App
 
-## Project info
+## Project Overview
+The E-Commerce Credit Score App is a platform that evaluates users' e-commerce purchase behavior to generate a unique credit score. This score allows users to unlock exclusive offers and benefits from partner companies based on their purchase consistency and reliability.
 
-**URL**: https://lovable.dev/projects/85f2d2d0-a963-4f91-bfa9-6878d2f51a44
+**Features**
+* Automatic extraction of e-commerce order data from Amazon, Flipkart, and other platforms via account integration.
 
-## How can I edit this code?
+* Secure data handling, ensuring user information is only used for credit score evaluation.
 
-There are several ways of editing your application.
+* Simplified user interface displaying only the final credit score without detailed breakdowns.
 
-**Use Lovable**
+* Permanent master key or login credentials for score verification by partner companies.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/85f2d2d0-a963-4f91-bfa9-6878d2f51a44) and start prompting.
+* API for partner companies to integrate and verify user scores.
 
-Changes made via Lovable will be committed automatically to this repo.
+* Option to disconnect any integrated platform, with score recalculation based on remaining platforms.
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+* Rewards system with history of claimed offers and points earned.
 
 ## What technologies are used for this project?
 
@@ -59,11 +27,3 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/85f2d2d0-a963-4f91-bfa9-6878d2f51a44) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
