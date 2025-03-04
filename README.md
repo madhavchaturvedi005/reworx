@@ -1,4 +1,4 @@
-# E-Commerce Credit Score App
+# Reworx App
 
 ## Project Overview
 The E-Commerce Credit Score App is a platform that evaluates users' e-commerce purchase behavior to generate a unique credit score. This score allows users to unlock exclusive offers and benefits from partner companies based on their purchase consistency and reliability.
