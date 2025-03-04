@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Platform } from '@/utils/trustScore';
+import { Platform, connectGmailAccount, extractOrdersFromGmail, processGmailOrderData } from '@/utils/trustScore';
 import { Button } from "@/components/ui/button";
 import { Link2, AlertCircle, Check, X } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
@@ -12,12 +12,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PlatformIntegrationCardProps {
   platform: Platform;
@@ -54,7 +54,56 @@ const PlatformIntegrationCard = ({
   
   // Handle connect button click
   const handleConnectClick = () => {
-    setShowLoginDialog(true);
+    if (platform.id === 'gmail') {
+      handleGmailConnect();
+    } else {
+      setShowLoginDialog(true);
+    }
+  };
+
+  // Handle Gmail connection
+  const handleGmailConnect = async () => {
+    setIsConnecting(true);
+    
+    try {
+      // Connect to Gmail account
+      const success = await connectGmailAccount();
+      
+      if (success) {
+        // For demo purposes, simulate extracting and processing orders
+        const mockAuthCode = "mock_auth_code_" + Date.now();
+        const extractedOrders = await extractOrdersFromGmail(mockAuthCode);
+        
+        // Process the order data
+        const orderHistory = processGmailOrderData(extractedOrders);
+        
+        console.log("Extracted and processed Gmail orders:", orderHistory);
+        
+        if (onConnect) {
+          onConnect(platform);
+        }
+        
+        toast({
+          title: 'Gmail Connected',
+          description: `Successfully connected Gmail and found ${extractedOrders.length} orders.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: 'Connection Failed',
+          description: 'Failed to connect to Gmail. Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error("Error connecting to Gmail:", error);
+      toast({
+        variant: "destructive",
+        title: 'Connection Error',
+        description: 'An error occurred while connecting to Gmail.',
+      });
+    } finally {
+      setIsConnecting(false);
+    }
   };
   
   // Handle platform login
@@ -168,7 +217,7 @@ const PlatformIntegrationCard = ({
               </div>
             ) : (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Connect to enhance your trust score
+                {platform.id === 'gmail' ? 'Connect to extract e-commerce order data from your emails' : 'Connect to enhance your trust score'}
               </p>
             )}
           </div>

@@ -1,31 +1,62 @@
 
 import { useState } from 'react';
-import { availablePlatforms, Platform } from '@/utils/trustScore';
+import { availablePlatforms, Platform, extractOrdersFromGmail, processGmailOrderData } from '@/utils/trustScore';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import PlatformIntegrationCard from '@/components/ui/trust-score/PlatformIntegrationCard';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Search } from 'lucide-react';
+import { AlertCircle, Search, Mail } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const Integration = () => {
   const [platforms, setPlatforms] = useState<Platform[]>(availablePlatforms);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showGmailSuccess, setShowGmailSuccess] = useState(false);
+  const [gmailOrdersCount, setGmailOrdersCount] = useState(0);
   const { toast } = useToast();
   
   // Handle connect platform
-  const handleConnectPlatform = (platform: Platform) => {
-    setPlatforms(platforms.map(p => 
-      p.id === platform.id ? { ...p, connected: true, lastSynced: new Date().toISOString() } : p
-    ));
-    
-    toast({
-      title: 'Platform Connected',
-      description: `${platform.name} has been successfully connected.`,
-    });
+  const handleConnectPlatform = async (platform: Platform) => {
+    if (platform.id === 'gmail') {
+      // For Gmail, we'll show a success dialog with more details
+      try {
+        // Simulate auth code from OAuth flow
+        const mockAuthCode = "mock_auth_code_" + Date.now();
+        
+        // Extract orders from Gmail
+        const extractedOrders = await extractOrdersFromGmail(mockAuthCode);
+        setGmailOrdersCount(extractedOrders.length);
+        
+        // Update platforms state
+        setPlatforms(platforms.map(p => 
+          p.id === platform.id ? { ...p, connected: true, lastSynced: new Date().toISOString() } : p
+        ));
+        
+        // Show success dialog
+        setShowGmailSuccess(true);
+      } catch (error) {
+        console.error("Error processing Gmail orders:", error);
+        toast({
+          variant: "destructive",
+          title: 'Processing Error',
+          description: 'An error occurred while processing your Gmail data.',
+        });
+      }
+    } else {
+      // For other platforms, just update state
+      setPlatforms(platforms.map(p => 
+        p.id === platform.id ? { ...p, connected: true, lastSynced: new Date().toISOString() } : p
+      ));
+      
+      toast({
+        title: 'Platform Connected',
+        description: `${platform.name} has been successfully connected.`,
+      });
+    }
   };
   
   // Handle disconnect platform
@@ -123,6 +154,69 @@ const Integration = () => {
       </main>
       
       <Footer />
+
+      {/* Gmail Success Dialog */}
+      <Dialog open={showGmailSuccess} onOpenChange={setShowGmailSuccess}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                <Mail className="w-5 h-5 text-green-600 dark:text-green-300" />
+              </div>
+              <DialogTitle>Gmail Connected Successfully</DialogTitle>
+            </div>
+            <DialogDescription>
+              We've successfully connected to your Gmail account and found your e-commerce orders.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <h4 className="font-medium mb-2">Order Summary</h4>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <span>Total Orders:</span>
+                </div>
+                <span className="font-medium">{gmailOrdersCount}</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  <span>Delivered:</span>
+                </div>
+                <span className="font-medium">2</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+                  <span>Processing:</span>
+                </div>
+                <span className="font-medium">1</span>
+                
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                  <span>Returned/Cancelled:</span>
+                </div>
+                <span className="font-medium">1</span>
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Your trust score has been updated based on your order history.
+              We'll periodically sync with your Gmail to keep your score up to date.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              className="w-full" 
+              onClick={() => setShowGmailSuccess(false)}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
