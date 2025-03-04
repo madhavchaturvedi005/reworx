@@ -27,3 +27,35 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## How It Works
+
+1. **User Registration**: Users sign up and link their e-commerce accounts.
+
+2. **Data Extraction**: The app automatically extracts order history from integrated platforms.
+
+3. **Score Calculation**: The app calculates the credit score based on user behavior, such as cancellations, timely deliveries, and consistent order patterns.
+
+4. **Score Display**: Users can view their final credit score and points earned on the app's homepage.
+
+5. **Claim Offers**: High-scoring users can claim exclusive discounts from partner companies.
+
+6. **API Verification**: Partner companies can verify user scores using the master key or API integration.
+
+
+## Security & Privacy 🔐
+
+* User data is strictly used for score evaluation and is not shared with third parties.
+
+* Secure encryption methods are applied to protect sensitive information.
+
+* Users can disconnect platforms or request data deletion at any time.
+
+
+## Future Plans 🚀
+
+* Expansion to partner with BNPL services and financial products.
+
+* Additional e-commerce platform integrations.
+
+* Loyalty programs with partner companies.
