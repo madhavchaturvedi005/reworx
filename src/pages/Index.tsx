@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ShoppingBag, CreditCard, Briefcase } from 'lucide-react';
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import Navbar from '@/components/layout/Navbar';
@@ -53,15 +53,18 @@ const Index = () => {
   const partnerTypes = [
     {
       name: 'E-commerce Platforms',
-      description: 'Offer exclusive discounts to trustworthy customers and reduce fraudulent orders.'
+      description: 'Offer exclusive discounts to trustworthy customers and reduce fraudulent orders.',
+      icon: <ShoppingBag className="h-12 w-12 text-primary/80 mb-3" />
     },
     {
       name: 'BNPL Services',
-      description: 'Provide better interest rates to customers with high trust scores.'
+      description: 'Provide better interest rates to customers with high trust scores.',
+      icon: <CreditCard className="h-12 w-12 text-primary/80 mb-3" />
     },
     {
       name: 'Subscription Services',
-      description: 'Offer extended trial periods to users with proven purchasing history.'
+      description: 'Offer extended trial periods to users with proven purchasing history.',
+      icon: <Briefcase className="h-12 w-12 text-primary/80 mb-3" />
     },
   ];
   
@@ -82,7 +85,7 @@ const Index = () => {
       <section className="pt-32 pb-20 px-4 md:px-0">
         <div className="container max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="text-center md:text-left">
               <SlideIn className="mb-6">
                 <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
                   Introducing Reworx
@@ -97,7 +100,7 @@ const Index = () => {
               </FadeIn>
               
               <FadeIn delay={400} className="mt-6">
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md">
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-md mx-auto md:mx-0">
                   Reworx measures your e-commerce reliability, allowing partner companies to offer you exclusive benefits based on your shopping habits.
                 </p>
               </FadeIn>
@@ -114,8 +117,8 @@ const Index = () => {
               </FadeIn>
             </div>
             
-            <FadeIn delay={300}>
-              <div className="relative">
+            <FadeIn delay={300} className="flex justify-center md:justify-start">
+              <div className="relative max-w-md">
                 <div className="absolute -top-10 -left-10 w-64 h-64 bg-primary/10 rounded-full filter blur-3xl"></div>
                 <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-primary/5 rounded-full filter blur-2xl"></div>
                 
@@ -126,7 +129,7 @@ const Index = () => {
                         <h3 className="font-bold text-lg">How To Use Reworx</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Simple steps to get started</p>
                       </div>
-                      <img src="/lovable-uploads/4faf26ec-4a33-45c3-a3fe-964fab70e056.png" alt="Reworx" className="w-10 h-10" />
+                      <img src="/lovable-uploads/aafc1d10-c0b1-48dd-8fe3-b54227a90e3e.png" alt="Reworx" className="h-10" />
                     </div>
                   </div>
                   
@@ -203,7 +206,8 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {partnerTypes.map((partner, index) => (
               <FadeIn key={index} delay={index * 150} className="h-full">
-                <div className="glass-card p-6 rounded-2xl h-full">
+                <div className="glass-card p-6 rounded-2xl h-full flex flex-col items-center text-center">
+                  {partner.icon}
                   <h3 className="text-xl font-bold mb-2">{partner.name}</h3>
                   <p className="text-gray-600 dark:text-gray-300">{partner.description}</p>
                 </div>
