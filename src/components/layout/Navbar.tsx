@@ -82,7 +82,7 @@ const Navbar = () => {
           to="/" 
           className="flex items-center transition-opacity duration-300 hover:opacity-80"
         >
-          <img src="/lovable-uploads/aafc1d10-c0b1-48dd-8fe3-b54227a90e3e.png" alt="Reworx" className="h-8" />
+          <img src="/lovable-uploads/46d3e11e-52ab-4fb5-bfae-9875ba936ab6.png" alt="Reworx" className="h-8" />
         </Link>
         
         <nav className="hidden md:flex items-center space-x-1">

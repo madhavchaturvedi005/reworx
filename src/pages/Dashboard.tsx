@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -10,11 +11,12 @@ import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
-  const { userScore } = useAuth();
+  const { userScore, updateUserScore } = useAuth();
   
   // Handle refresh score (just visual, doesn't actually change the score)
   const handleRefreshScore = () => {
@@ -61,6 +63,21 @@ const Dashboard = () => {
     }
   };
   
+  // Handle master key change
+  const handleMasterKeyChange = (newKey: string) => {
+    if (userScore && updateUserScore) {
+      updateUserScore({
+        ...userScore,
+        masterKey: newKey
+      });
+      
+      toast({
+        title: 'Master Key Updated',
+        description: 'Your master key has been updated across the application.',
+      });
+    }
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -69,10 +86,17 @@ const Dashboard = () => {
         <div className="container max-w-6xl mx-auto px-4">
           <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <SlideIn>
-              <h1 className="text-3xl font-bold">Dashboard</h1>
-              <p className="text-gray-500 dark:text-gray-400">
-                Manage your trust score and connected platforms
-              </p>
+              <div className="flex items-center gap-4">
+                <Link to="/home" className="hidden md:block">
+                  <img src="/lovable-uploads/46d3e11e-52ab-4fb5-bfae-9875ba936ab6.png" alt="Reworx" className="h-8" />
+                </Link>
+                <div>
+                  <h1 className="text-3xl font-bold">Dashboard</h1>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Manage your trust score and connected platforms
+                  </p>
+                </div>
+              </div>
             </SlideIn>
             
             <FadeIn delay={200}>
@@ -104,7 +128,10 @@ const Dashboard = () => {
               </SlideIn>
               
               <SlideIn delay={200}>
-                <MasterKeyCard masterKey={userScore.masterKey} />
+                <MasterKeyCard 
+                  masterKey={userScore.masterKey} 
+                  onMasterKeyChange={handleMasterKeyChange}
+                />
               </SlideIn>
               
               <FadeIn delay={300} className="lg:col-span-1 md:col-span-2">

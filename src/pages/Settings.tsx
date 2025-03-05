@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -9,8 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import MasterKeyCard from '@/components/ui/trust-score/MasterKeyCard';
-import { UserScore, createNewMasterKey } from '@/utils/trustScore';
-import { Check, Copy, Info, Mail, Shield, User } from 'lucide-react';
+import { UserScore } from '@/utils/trustScore';
+import { Check, Copy, Info, Mail, Shield, User, ArrowLeft } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/tooltip';
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
+import { Link } from 'react-router-dom';
 
 const Settings = () => {
   // User data state (simulated)
@@ -41,7 +41,6 @@ const Settings = () => {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [newName, setNewName] = useState(userData.name);
   const [newEmail, setNewEmail] = useState(userData.email);
-  const [newMasterKey, setNewMasterKey] = useState('');
   const [showConfirmMasterKey, setShowConfirmMasterKey] = useState(false);
   
   // Copy states
@@ -119,30 +118,12 @@ const Settings = () => {
     }
   };
   
-  // Handle master key regeneration
-  const handleRegenerateMasterKey = () => {
-    setNewMasterKey(createNewMasterKey());
-    setShowConfirmMasterKey(true);
-  };
-  
-  // Confirm master key update
-  const handleConfirmMasterKey = () => {
+  // Handle master key update
+  const handleMasterKeyChange = (newKey: string) => {
     setUserData({
       ...userData,
-      masterKey: newMasterKey,
+      masterKey: newKey,
     });
-    setShowConfirmMasterKey(false);
-    
-    toast({
-      title: 'Master Key Updated',
-      description: 'Your master key has been successfully updated. Please save it securely.',
-    });
-  };
-  
-  // Cancel master key update
-  const handleCancelMasterKey = () => {
-    setShowConfirmMasterKey(false);
-    setNewMasterKey('');
   };
   
   return (
@@ -151,11 +132,16 @@ const Settings = () => {
       
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-4xl mx-auto px-4">
-          <SlideIn className="mb-8">
-            <h1 className="text-3xl font-bold">Account Settings</h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              Manage your account details and preferences
-            </p>
+          <SlideIn className="mb-8 flex items-center gap-2">
+            <Link to="/home" className="flex items-center mr-4">
+              <img src="/lovable-uploads/46d3e11e-52ab-4fb5-bfae-9875ba936ab6.png" alt="Reworx" className="h-8" />
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold">Account Settings</h1>
+              <p className="text-gray-500 dark:text-gray-400">
+                Manage your account details and preferences
+              </p>
+            </div>
           </SlideIn>
           
           {/* Profile Information */}
@@ -267,32 +253,8 @@ const Settings = () => {
               <MasterKeyCard 
                 masterKey={userData.masterKey} 
                 className="mb-4"
+                onMasterKeyChange={handleMasterKeyChange}
               />
-              
-              {showConfirmMasterKey ? (
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-200 rounded-md text-sm">
-                    <Shield className="h-4 w-4 flex-shrink-0" />
-                    <p>
-                      Regenerating your master key will invalidate your previous key.
-                      This action cannot be undone.
-                    </p>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button onClick={handleConfirmMasterKey}>
-                      Confirm Update
-                    </Button>
-                    <Button variant="outline" onClick={handleCancelMasterKey}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button variant="outline" onClick={handleRegenerateMasterKey}>
-                  Regenerate Master Key
-                </Button>
-              )}
             </div>
           </FadeIn>
           

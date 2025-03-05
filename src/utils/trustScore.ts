@@ -103,7 +103,7 @@ export const generateRandomScore = (): UserScore => {
       rejected
     },
     platforms: connectedPlatforms,
-    masterKey: score > 40 ? generateMasterKey() : undefined,
+    masterKey: score > 40 ? 'D!S4A-2003-EFGH' : undefined,
   };
 };
 

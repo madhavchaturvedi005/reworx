@@ -9,9 +9,10 @@ import { useToast } from "@/components/ui/use-toast";
 interface MasterKeyCardProps {
   masterKey?: string;
   className?: string;
+  onMasterKeyChange?: (newKey: string) => void;
 }
 
-const MasterKeyCard = ({ masterKey: initialMasterKey, className }: MasterKeyCardProps) => {
+const MasterKeyCard = ({ masterKey: initialMasterKey, className, onMasterKeyChange }: MasterKeyCardProps) => {
   const [masterKey, setMasterKey] = useState(initialMasterKey || '');
   const [isRevealed, setIsRevealed] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -28,6 +29,11 @@ const MasterKeyCard = ({ masterKey: initialMasterKey, className }: MasterKeyCard
       setMasterKey(newKey);
       setIsRevealed(true);
       setIsRegenerating(false);
+      
+      // Notify parent component about the key change
+      if (onMasterKeyChange) {
+        onMasterKeyChange(newKey);
+      }
       
       toast({
         title: 'Master Key Updated',

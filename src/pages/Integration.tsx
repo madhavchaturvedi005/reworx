@@ -11,12 +11,15 @@ import { useToast } from "@/components/ui/use-toast";
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import PlatformRequestForm from '@/components/home/PlatformRequestForm';
+import { Link } from 'react-router-dom';
 
 const Integration = () => {
   const [platforms, setPlatforms] = useState<Platform[]>(availablePlatforms);
   const [searchQuery, setSearchQuery] = useState('');
   const [showGmailSuccess, setShowGmailSuccess] = useState(false);
   const [gmailOrdersCount, setGmailOrdersCount] = useState(0);
+  const [formOpen, setFormOpen] = useState(false);
   const { toast } = useToast();
   
   // Handle connect platform
@@ -82,11 +85,16 @@ const Integration = () => {
       
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-6xl mx-auto px-4">
-          <SlideIn className="mb-6">
-            <h1 className="text-3xl font-bold">Platform Integration</h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              Connect your e-commerce platforms to enhance your trust score
-            </p>
+          <SlideIn className="mb-6 flex items-center gap-4">
+            <Link to="/home">
+              <img src="/lovable-uploads/46d3e11e-52ab-4fb5-bfae-9875ba936ab6.png" alt="Reworx" className="h-8" />
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold">Platform Integration</h1>
+              <p className="text-gray-500 dark:text-gray-400">
+                Connect your e-commerce platforms to enhance your trust score
+              </p>
+            </div>
           </SlideIn>
           
           <FadeIn delay={200} className="mb-8">
@@ -140,12 +148,7 @@ const Integration = () => {
             </p>
             <Button
               variant="outline"
-              onClick={() => {
-                toast({
-                  title: 'Request Received',
-                  description: "Thanks for letting us know! We'll add more platforms soon.",
-                });
-              }}
+              onClick={() => setFormOpen(true)}
             >
               Request a Platform
             </Button>
@@ -154,6 +157,9 @@ const Integration = () => {
       </main>
       
       <Footer />
+
+      {/* Platform Request Form */}
+      <PlatformRequestForm open={formOpen} onOpenChange={setFormOpen} />
 
       {/* Gmail Success Dialog */}
       <Dialog open={showGmailSuccess} onOpenChange={setShowGmailSuccess}>

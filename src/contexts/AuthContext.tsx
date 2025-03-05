@@ -1,13 +1,12 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { generateRandomScore, UserScore } from '@/utils/trustScore';
+import { UserScore, generateRandomScore } from '@/utils/trustScore';
 
-// Define the user type
+// Define Auth Context types
 interface User {
   id: string;
+  name: string;
   email: string;
-  name?: string;
-  // Add more user fields as needed
 }
 
 interface AuthContextType {
@@ -16,51 +15,70 @@ interface AuthContextType {
   userScore: UserScore | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUserScore: (newScore: UserScore) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  user: null,
+  userScore: null,
+  login: async () => false,
+  logout: () => {},
+  updateUserScore: () => {},
+});
 
-// Predefined demo user
-const DEMO_USER: User = {
-  id: 'demo-user-1',
-  email: 'demo@reworx.com',
-  name: 'Demo User'
-};
+// Custom hook to use the auth context
+export const useAuth = () => useContext(AuthContext);
 
-// Generate a static score for the demo user
-const STATIC_USER_SCORE = generateRandomScore();
-
+// Auth Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [userScore, setUserScore] = useState<UserScore | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   
-  // Initialize auth state from localStorage
+  // Initialize from localStorage on component mount
   useEffect(() => {
-    const storedAuth = localStorage.getItem('isAuthenticated') === 'true';
-    const storedUser = localStorage.getItem('user');
+    const storedAuth = localStorage.getItem('auth');
     
-    if (storedAuth && storedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
-      // Always use the same static score for consistency
-      setUserScore(STATIC_USER_SCORE);
+    if (storedAuth) {
+      try {
+        const authData = JSON.parse(storedAuth);
+        setIsAuthenticated(true);
+        setUser(authData.user);
+      } catch (error) {
+        console.error('Failed to parse stored auth data:', error);
+        localStorage.removeItem('auth');
+      }
     }
     
-    setIsLoading(false);
+    // Generate a random score for demo purposes
+    if (!userScore) {
+      const generatedScore = generateRandomScore();
+      setUserScore(generatedScore);
+    }
   }, []);
   
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Demo credentials check
-    if (email === 'demo@reworx.com' && password === 'password123') {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(DEMO_USER));
+    // Demo login logic - in a real app, this would be an API call
+    if (password.length >= 6) {
+      const user = {
+        id: '1',
+        name: email.split('@')[0],
+        email,
+      };
       
+      setUser(user);
       setIsAuthenticated(true);
-      setUser(DEMO_USER);
-      setUserScore(STATIC_USER_SCORE);
+      
+      // Store in localStorage
+      localStorage.setItem('auth', JSON.stringify({ user }));
+      
+      // Generate a score for the newly logged in user
+      const generatedScore = generateRandomScore();
+      generatedScore.masterKey = 'D!S4A-2003-EFGH'; // Set consistent master key
+      setUserScore(generatedScore);
       
       return true;
     }
@@ -70,32 +88,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   // Logout function
   const logout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
-    
-    setIsAuthenticated(false);
     setUser(null);
+    setIsAuthenticated(false);
     setUserScore(null);
+    localStorage.removeItem('auth');
   };
   
-  if (isLoading) {
-    return null; // Or a loading spinner
-  }
+  // Update user score
+  const updateUserScore = (newScore: UserScore) => {
+    setUserScore(newScore);
+  };
   
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, user, userScore, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-// Custom hook to use auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
+  // Context provider value
+  const value = {
+    isAuthenticated,
+    user,
+    userScore,
+    login,
+    logout,
+    updateUserScore
+  };
   
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  
-  return context;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
