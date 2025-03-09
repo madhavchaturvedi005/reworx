@@ -16,7 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUserScore: (newScore: UserScore) => void;
-  isLoading: boolean; // Add loading state
+  isLoading: boolean;
 }
 
 // Create context with default values
@@ -27,7 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   updateUserScore: () => {},
-  isLoading: true, // Initialize loading state as true
+  isLoading: true,
 });
 
 // Custom hook to use the auth context
@@ -38,35 +38,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [userScore, setUserScore] = useState<UserScore | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Add loading state
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   
   // Initialize from localStorage on component mount
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const storedAuth = localStorage.getItem('auth');
-        
-        if (storedAuth) {
-          try {
-            const authData = JSON.parse(storedAuth);
-            setIsAuthenticated(true);
-            setUser(authData.user);
-          } catch (error) {
-            console.error('Failed to parse stored auth data:', error);
-            localStorage.removeItem('auth');
+        // Add a small delay to ensure localStorage is accessible
+        // This helps with certain deployment environments
+        setTimeout(() => {
+          const storedAuth = localStorage.getItem('auth');
+          
+          if (storedAuth) {
+            try {
+              const authData = JSON.parse(storedAuth);
+              setIsAuthenticated(true);
+              setUser(authData.user);
+            } catch (error) {
+              console.error('Failed to parse stored auth data:', error);
+              localStorage.removeItem('auth');
+            }
           }
-        }
-        
-        // Generate a random score for demo purposes
-        if (!userScore) {
-          const generatedScore = generateRandomScore();
-          generatedScore.masterKey = 'D!S4A-2003-EFGH'; // Use consistent master key
-          setUserScore(generatedScore);
-        }
+          
+          // Generate a random score for demo purposes
+          if (!userScore) {
+            const generatedScore = generateRandomScore();
+            generatedScore.masterKey = 'D!S4A-2003-EFGH'; // Use consistent master key
+            setUserScore(generatedScore);
+          }
+          
+          // Mark loading as complete
+          setIsLoading(false);
+        }, 300); // Small delay for better initialization in deployed environments
       } catch (error) {
         console.error('Error initializing auth:', error);
-      } finally {
-        // Mark loading as complete
         setIsLoading(false);
       }
     };
@@ -122,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     logout,
     updateUserScore,
-    isLoading // Include loading state in the context value
+    isLoading
   };
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
