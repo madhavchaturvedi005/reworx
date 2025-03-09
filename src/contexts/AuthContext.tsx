@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUserScore: (newScore: UserScore) => void;
+  isLoading: boolean; // Add loading state
 }
 
 // Create context with default values
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   updateUserScore: () => {},
+  isLoading: true, // Initialize loading state as true
 });
 
 // Custom hook to use the auth context
@@ -36,27 +38,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [userScore, setUserScore] = useState<UserScore | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Add loading state
   
   // Initialize from localStorage on component mount
   useEffect(() => {
-    const storedAuth = localStorage.getItem('auth');
-    
-    if (storedAuth) {
+    const initializeAuth = async () => {
       try {
-        const authData = JSON.parse(storedAuth);
-        setIsAuthenticated(true);
-        setUser(authData.user);
+        const storedAuth = localStorage.getItem('auth');
+        
+        if (storedAuth) {
+          try {
+            const authData = JSON.parse(storedAuth);
+            setIsAuthenticated(true);
+            setUser(authData.user);
+          } catch (error) {
+            console.error('Failed to parse stored auth data:', error);
+            localStorage.removeItem('auth');
+          }
+        }
+        
+        // Generate a random score for demo purposes
+        if (!userScore) {
+          const generatedScore = generateRandomScore();
+          generatedScore.masterKey = 'D!S4A-2003-EFGH'; // Use consistent master key
+          setUserScore(generatedScore);
+        }
       } catch (error) {
-        console.error('Failed to parse stored auth data:', error);
-        localStorage.removeItem('auth');
+        console.error('Error initializing auth:', error);
+      } finally {
+        // Mark loading as complete
+        setIsLoading(false);
       }
-    }
-    
-    // Generate a random score for demo purposes
-    if (!userScore) {
-      const generatedScore = generateRandomScore();
-      setUserScore(generatedScore);
-    }
+    };
+
+    initializeAuth();
   }, []);
   
   // Login function
@@ -106,7 +121,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     userScore,
     login,
     logout,
-    updateUserScore
+    updateUserScore,
+    isLoading // Include loading state in the context value
   };
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
