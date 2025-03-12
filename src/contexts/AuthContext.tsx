@@ -16,7 +16,7 @@ interface AuthContextType {
   user: AuthUser | null;
   userScore: UserScore | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  signup: (email: string, password: string, name: string) => Promise<{success: boolean, errorMessage?: string}>;
   logout: () => Promise<void>;
   updateUserScore: (newScore: UserScore) => Promise<void>;
   isLoading: boolean;
@@ -28,7 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userScore: null,
   login: async () => false,
-  signup: async () => false,
+  signup: async () => ({success: false}),
   logout: async () => {},
   updateUserScore: async () => {},
   isLoading: true,
@@ -168,8 +168,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
   
   // Signup function
-  const signup = async (email: string, password: string, name: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, name: string): Promise<{success: boolean, errorMessage?: string}> => {
     try {
+      console.log('Signup attempt:', { email, name });
+      
+      // First, check if user already exists
+      const { data: existingUser, error: existingUserError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email)
+        .single();
+      
+      if (existingUserError && existingUserError.code !== 'PGRST116') {
+        console.error('Error checking existing user:', existingUserError);
+      }
+      
+      if (existingUser) {
+        return { success: false, errorMessage: 'User with this email already exists' };
+      }
+      
+      // Attempt to sign up
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -177,45 +195,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         console.error('Signup error:', error);
-        return false;
+        return { 
+          success: false, 
+          errorMessage: error.message || 'Failed to create account. Network error or server unavailable.'
+        };
       }
       
-      if (data.user) {
-        // Create user profile
-        await supabase.from('profiles').insert({
-          id: data.user.id,
-          name,
-          email,
-        });
-        
-        // Generate a new score with master key
-        const newScore = generateRandomScore();
-        const newMasterKey = createNewMasterKey();
-        newScore.masterKey = newMasterKey;
-        
-        // Insert score into database
-        await supabase.from('scores').insert({
-          user_id: data.user.id,
-          score: newScore.score,
-          level: newScore.level,
-          master_key: newMasterKey,
-          order_history: JSON.stringify(newScore.orderHistory),
-          platforms: JSON.stringify(newScore.platforms),
-        });
-        
-        return true;
+      if (!data.user) {
+        return { success: false, errorMessage: 'Signup successful but no user returned' };
       }
       
-      return false;
+      // Create user profile
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: data.user.id,
+        name,
+        email,
+      });
+      
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        return { 
+          success: false, 
+          errorMessage: 'Account created but profile setup failed. Please try logging in.'
+        };
+      }
+      
+      // Generate a new score with master key
+      const newScore = generateRandomScore();
+      const newMasterKey = createNewMasterKey();
+      newScore.masterKey = newMasterKey;
+      
+      // Insert score into database
+      const { error: scoreError } = await supabase.from('scores').insert({
+        user_id: data.user.id,
+        score: newScore.score,
+        level: newScore.level,
+        master_key: newMasterKey,
+        order_history: JSON.stringify(newScore.orderHistory),
+        platforms: JSON.stringify(newScore.platforms),
+      });
+      
+      if (scoreError) {
+        console.error('Error creating score:', scoreError);
+        return { 
+          success: false, 
+          errorMessage: 'Account created but score setup failed. Please try logging in.'
+        };
+      }
+      
+      return { success: true };
     } catch (err) {
       console.error('Error during signup:', err);
-      return false;
+      return { 
+        success: false, 
+        errorMessage: 'Network error or server unavailable. Please try again later.'
+      };
     }
   };
   
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('Login attempt:', { email });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -98,7 +97,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const success = await signup(signupEmail, signupPassword, signupName);
+      const { success, errorMessage } = await signup(signupEmail, signupPassword, signupName);
       
       if (success) {
         toast({
@@ -108,7 +107,12 @@ const Login = () => {
         
         navigate('/dashboard');
       } else {
-        setSignupError('Failed to create account. Please try again.');
+        setSignupError(errorMessage || 'Failed to create account. Please try again.');
+        toast({
+          title: 'Signup Failed',
+          description: errorMessage || 'Failed to create account. Please try again.',
+          variant: 'destructive'
+        });
       }
     } catch (err) {
       setSignupError('An error occurred. Please try again.');
