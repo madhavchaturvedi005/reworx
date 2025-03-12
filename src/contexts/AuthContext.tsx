@@ -1,9 +1,11 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { UserScore, generateRandomScore } from '@/utils/trustScore';
+import { UserScore, generateRandomScore, createNewMasterKey } from '@/utils/trustScore';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 // Define Auth Context types
-interface User {
+interface AuthUser {
   id: string;
   name: string;
   email: string;
@@ -11,11 +13,12 @@ interface User {
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
+  user: AuthUser | null;
   userScore: UserScore | null;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateUserScore: (newScore: UserScore) => void;
+  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  updateUserScore: (newScore: UserScore) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -25,8 +28,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userScore: null,
   login: async () => false,
-  logout: () => {},
-  updateUserScore: () => {},
+  signup: async () => false,
+  logout: async () => {},
+  updateUserScore: async () => {},
   isLoading: true,
 });
 
@@ -36,87 +40,229 @@ export const useAuth = () => useContext(AuthContext);
 // Auth Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [userScore, setUserScore] = useState<UserScore | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
-  // Initialize from localStorage on component mount
+  // Initialize from Supabase on component mount
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Add a small delay to ensure localStorage is accessible
-        // This helps with certain deployment environments
-        setTimeout(() => {
-          const storedAuth = localStorage.getItem('auth');
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const { user: supabaseUser } = session;
           
-          if (storedAuth) {
-            try {
-              const authData = JSON.parse(storedAuth);
-              setIsAuthenticated(true);
-              setUser(authData.user);
-            } catch (error) {
-              console.error('Failed to parse stored auth data:', error);
-              localStorage.removeItem('auth');
+          if (supabaseUser) {
+            // Get user's profile from 'profiles' table
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', supabaseUser.id)
+              .single();
+            
+            setIsAuthenticated(true);
+            setUser({
+              id: supabaseUser.id,
+              name: profile?.name || supabaseUser.email?.split('@')[0] || '',
+              email: supabaseUser.email || '',
+            });
+            
+            // Get user's score from 'scores' table
+            const { data: scoreData } = await supabase
+              .from('scores')
+              .select('*')
+              .eq('user_id', supabaseUser.id)
+              .single();
+            
+            if (scoreData) {
+              setUserScore({
+                score: scoreData.score,
+                level: scoreData.level,
+                masterKey: scoreData.master_key,
+                orderHistory: JSON.parse(scoreData.order_history),
+                platforms: JSON.parse(scoreData.platforms),
+              });
+            } else {
+              // Generate a new score if none exists
+              const newScore = generateRandomScore();
+              const newMasterKey = createNewMasterKey();
+              newScore.masterKey = newMasterKey;
+              
+              // Insert new score into database
+              await supabase.from('scores').insert({
+                user_id: supabaseUser.id,
+                score: newScore.score,
+                level: newScore.level,
+                master_key: newMasterKey,
+                order_history: JSON.stringify(newScore.orderHistory),
+                platforms: JSON.stringify(newScore.platforms),
+              });
+              
+              setUserScore(newScore);
             }
           }
-          
-          // Generate a random score for demo purposes
-          if (!userScore) {
-            const generatedScore = generateRandomScore();
-            generatedScore.masterKey = 'D!S4A-2003-EFGH'; // Use consistent master key
-            setUserScore(generatedScore);
-          }
-          
-          // Mark loading as complete
-          setIsLoading(false);
-        }, 300); // Small delay for better initialization in deployed environments
+        }
+        
+        // Mark loading as complete
+        setIsLoading(false);
       } catch (error) {
         console.error('Error initializing auth:', error);
         setIsLoading(false);
       }
     };
 
+    // Setup auth change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          const { user: supabaseUser } = session;
+          
+          if (supabaseUser) {
+            // Get user's profile from 'profiles' table
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', supabaseUser.id)
+              .single();
+            
+            setIsAuthenticated(true);
+            setUser({
+              id: supabaseUser.id,
+              name: profile?.name || supabaseUser.email?.split('@')[0] || '',
+              email: supabaseUser.email || '',
+            });
+            
+            // Get user's score
+            const { data: scoreData } = await supabase
+              .from('scores')
+              .select('*')
+              .eq('user_id', supabaseUser.id)
+              .single();
+            
+            if (scoreData) {
+              setUserScore({
+                score: scoreData.score,
+                level: scoreData.level,
+                masterKey: scoreData.master_key,
+                orderHistory: JSON.parse(scoreData.order_history),
+                platforms: JSON.parse(scoreData.platforms),
+              });
+            }
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthenticated(false);
+          setUser(null);
+          setUserScore(null);
+        }
+      }
+    );
+
     initializeAuth();
+
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+  
+  // Signup function
+  const signup = async (email: string, password: string, name: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Signup error:', error);
+        return false;
+      }
+      
+      if (data.user) {
+        // Create user profile
+        await supabase.from('profiles').insert({
+          id: data.user.id,
+          name,
+          email,
+        });
+        
+        // Generate a new score with master key
+        const newScore = generateRandomScore();
+        const newMasterKey = createNewMasterKey();
+        newScore.masterKey = newMasterKey;
+        
+        // Insert score into database
+        await supabase.from('scores').insert({
+          user_id: data.user.id,
+          score: newScore.score,
+          level: newScore.level,
+          master_key: newMasterKey,
+          order_history: JSON.stringify(newScore.orderHistory),
+          platforms: JSON.stringify(newScore.platforms),
+        });
+        
+        return true;
+      }
+      
+      return false;
+    } catch (err) {
+      console.error('Error during signup:', err);
+      return false;
+    }
+  };
   
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Demo login logic - in a real app, this would be an API call
-    if (password.length >= 6) {
-      const user = {
-        id: '1',
-        name: email.split('@')[0],
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-      };
+        password,
+      });
       
-      setUser(user);
-      setIsAuthenticated(true);
+      if (error) {
+        console.error('Login error:', error);
+        return false;
+      }
       
-      // Store in localStorage
-      localStorage.setItem('auth', JSON.stringify({ user }));
-      
-      // Generate a score for the newly logged in user
-      const generatedScore = generateRandomScore();
-      generatedScore.masterKey = 'D!S4A-2003-EFGH'; // Set consistent master key
-      setUserScore(generatedScore);
-      
-      return true;
+      return data.session !== null;
+    } catch (err) {
+      console.error('Error during login:', err);
+      return false;
     }
-    
-    return false;
   };
   
   // Logout function
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    setUserScore(null);
-    localStorage.removeItem('auth');
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setIsAuthenticated(false);
+      setUser(null);
+      setUserScore(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
   
   // Update user score
-  const updateUserScore = (newScore: UserScore) => {
-    setUserScore(newScore);
+  const updateUserScore = async (newScore: UserScore) => {
+    if (!user) return;
+    
+    try {
+      await supabase.from('scores').upsert({
+        user_id: user.id,
+        score: newScore.score,
+        level: newScore.level,
+        master_key: newScore.masterKey,
+        order_history: JSON.stringify(newScore.orderHistory),
+        platforms: JSON.stringify(newScore.platforms),
+      });
+      
+      setUserScore(newScore);
+    } catch (error) {
+      console.error('Error updating score:', error);
+    }
   };
   
   // Context provider value
@@ -125,6 +271,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     userScore,
     login,
+    signup,
     logout,
     updateUserScore,
     isLoading

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import MasterKeyCard from '@/components/ui/trust-score/MasterKeyCard';
-import { UserScore } from '@/utils/trustScore';
 import { Check, Copy, Info, Mail, Shield, User, ArrowLeft } from 'lucide-react';
 import {
   Tooltip,
@@ -19,14 +18,36 @@ import {
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const Settings = () => {
-  // User data state (simulated)
+  const { user, userScore, updateUserScore } = useAuth();
+  
+  // User data state
   const [userData, setUserData] = useState({
-    name: 'Madhav Chaturvedi',
-    email: 'madhavchaturvedimac@gmail.com',
-    masterKey: 'D!S4A-2003-EFGH',
+    name: user?.name || '',
+    email: user?.email || '',
+    masterKey: userScore?.masterKey || '',
   });
+  
+  // Update userData when auth context changes
+  useEffect(() => {
+    if (user) {
+      setUserData(prev => ({
+        ...prev,
+        name: user.name,
+        email: user.email,
+      }));
+    }
+    
+    if (userScore) {
+      setUserData(prev => ({
+        ...prev,
+        masterKey: userScore.masterKey || '',
+      }));
+    }
+  }, [user, userScore]);
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -36,12 +57,39 @@ const Settings = () => {
     dataRetention: false,
   });
   
+  // Load user settings from Supabase
+  useEffect(() => {
+    const loadUserSettings = async () => {
+      if (user) {
+        try {
+          const { data } = await supabase
+            .from('user_settings')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (data) {
+            setSettings({
+              emailNotifications: data.email_notifications,
+              dataSharingConsent: data.data_sharing_consent,
+              twoFactorAuth: data.two_factor_auth,
+              dataRetention: data.data_retention,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading user settings:', error);
+        }
+      }
+    };
+    
+    loadUserSettings();
+  }, [user]);
+  
   // Editing states
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [newName, setNewName] = useState(userData.name);
   const [newEmail, setNewEmail] = useState(userData.email);
-  const [showConfirmMasterKey, setShowConfirmMasterKey] = useState(false);
   
   // Copy states
   const [nameCopied, setNameCopied] = useState(false);
@@ -50,16 +98,42 @@ const Settings = () => {
   const { toast } = useToast();
   
   // Handle toggle changes
-  const handleToggleChange = (key: keyof typeof settings) => {
-    setSettings({
+  const handleToggleChange = async (key: keyof typeof settings) => {
+    const newSettings = {
       ...settings,
       [key]: !settings[key],
-    });
+    };
     
-    toast({
-      title: 'Setting Updated',
-      description: `${key} has been ${!settings[key] ? 'enabled' : 'disabled'}.`,
-    });
+    setSettings(newSettings);
+    
+    // Update settings in Supabase
+    if (user) {
+      try {
+        await supabase.from('user_settings').upsert({
+          user_id: user.id,
+          email_notifications: newSettings.emailNotifications,
+          data_sharing_consent: newSettings.dataSharingConsent,
+          two_factor_auth: newSettings.twoFactorAuth,
+          data_retention: newSettings.dataRetention,
+        });
+        
+        toast({
+          title: 'Setting Updated',
+          description: `${key.replace(/([A-Z])/g, ' $1').toLowerCase()} has been ${!settings[key] ? 'enabled' : 'disabled'}.`,
+        });
+      } catch (error) {
+        console.error('Error updating settings:', error);
+        
+        // Revert the setting if there was an error
+        setSettings(settings);
+        
+        toast({
+          title: 'Error',
+          description: 'Failed to update setting. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    }
   };
   
   // Handle copy to clipboard
@@ -81,34 +155,74 @@ const Settings = () => {
   };
   
   // Handle name update
-  const handleNameUpdate = () => {
-    if (newName.trim() !== '') {
-      setUserData({
-        ...userData,
-        name: newName,
-      });
-      setIsEditingName(false);
-      
-      toast({
-        title: 'Name Updated',
-        description: 'Your name has been successfully updated.',
-      });
+  const handleNameUpdate = async () => {
+    if (newName.trim() !== '' && user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ name: newName })
+          .eq('id', user.id);
+        
+        setUserData({
+          ...userData,
+          name: newName,
+        });
+        
+        setIsEditingName(false);
+        
+        toast({
+          title: 'Name Updated',
+          description: 'Your name has been successfully updated.',
+        });
+      } catch (error) {
+        console.error('Error updating name:', error);
+        
+        toast({
+          title: 'Error',
+          description: 'Failed to update name. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   };
   
   // Handle email update
-  const handleEmailUpdate = () => {
-    if (newEmail.trim() !== '' && newEmail.includes('@')) {
-      setUserData({
-        ...userData,
-        email: newEmail,
-      });
-      setIsEditingEmail(false);
-      
-      toast({
-        title: 'Email Updated',
-        description: 'Your email has been successfully updated.',
-      });
+  const handleEmailUpdate = async () => {
+    if (newEmail.trim() !== '' && newEmail.includes('@') && user) {
+      try {
+        // Update email in Supabase Auth
+        const { error: authError } = await supabase.auth.updateUser({
+          email: newEmail,
+        });
+        
+        if (authError) throw authError;
+        
+        // Update email in profiles table
+        await supabase
+          .from('profiles')
+          .update({ email: newEmail })
+          .eq('id', user.id);
+        
+        setUserData({
+          ...userData,
+          email: newEmail,
+        });
+        
+        setIsEditingEmail(false);
+        
+        toast({
+          title: 'Email Update Initiated',
+          description: 'Please check your inbox to confirm your new email address.',
+        });
+      } catch (error) {
+        console.error('Error updating email:', error);
+        
+        toast({
+          title: 'Invalid Email',
+          description: 'Failed to update email. Please try again with a valid email address.',
+          variant: 'destructive',
+        });
+      }
     } else {
       toast({
         title: 'Invalid Email',
@@ -119,11 +233,20 @@ const Settings = () => {
   };
   
   // Handle master key update
-  const handleMasterKeyChange = (newKey: string) => {
+  const handleMasterKeyChange = async (newKey: string) => {
     setUserData({
       ...userData,
       masterKey: newKey,
     });
+    
+    if (userScore) {
+      const updatedScore = {
+        ...userScore,
+        masterKey: newKey,
+      };
+      
+      await updateUserScore(updatedScore);
+    }
   };
   
   return (

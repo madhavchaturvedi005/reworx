@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { createNewMasterKey } from '@/utils/trustScore';
 import { Check, RefreshCw, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MasterKeyCardProps {
   masterKey?: string;
@@ -18,28 +18,45 @@ const MasterKeyCard = ({ masterKey: initialMasterKey, className, onMasterKeyChan
   const [isCopied, setIsCopied] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const { toast } = useToast();
+  const { userScore, updateUserScore } = useAuth();
   
   // Handle generate/regenerate master key
-  const handleGenerateKey = () => {
+  const handleGenerateKey = async () => {
     setIsRegenerating(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
       const newKey = createNewMasterKey();
       setMasterKey(newKey);
       setIsRevealed(true);
-      setIsRegenerating(false);
       
       // Notify parent component about the key change
       if (onMasterKeyChange) {
         onMasterKeyChange(newKey);
       }
       
+      // If we have userScore, update it in Supabase
+      if (userScore) {
+        const updatedScore = {
+          ...userScore,
+          masterKey: newKey
+        };
+        await updateUserScore(updatedScore);
+      }
+      
       toast({
         title: 'Master Key Updated',
         description: 'Your master key has been successfully updated.',
       });
-    }, 1200);
+    } catch (error) {
+      console.error('Error updating master key:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update master key. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
   };
   
   // Handle copying master key to clipboard
