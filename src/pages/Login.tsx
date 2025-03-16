@@ -162,8 +162,14 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      // Store email in localStorage for OTP verification
+      localStorage.setItem('verificationEmail', email);
+      
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
+        options: {
+          shouldCreateUser: false // Don't create a new user if one doesn't exist
+        }
       });
       
       if (error) {

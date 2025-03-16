@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 const OTPVerification = () => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -22,12 +22,35 @@ const OTPVerification = () => {
   const { isAuthenticated } = useAuth();
   
   useEffect(() => {
-    // If user is already authenticated, redirect to dashboard
+    const getEmailFromSession = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user?.email) {
+          setEmail(sessionData.session.user.email);
+        } else {
+          const storedEmail = localStorage.getItem('verificationEmail');
+          if (storedEmail) {
+            setEmail(storedEmail);
+          } else {
+            setError('No email found. Please go back and login again.');
+            toast({
+              title: 'Error',
+              description: 'No email found. Please go back and login again.',
+              variant: 'destructive'
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error retrieving session:', err);
+      }
+    };
+    
+    getEmailFromSession();
+    
     if (isAuthenticated) {
       navigate('/dashboard');
     }
     
-    // Start countdown for resend button
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
@@ -40,11 +63,16 @@ const OTPVerification = () => {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, toast]);
   
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
       setError('Please enter a valid 6-digit code');
+      return;
+    }
+    
+    if (!email) {
+      setError('Email not found. Please go back to login page.');
       return;
     }
     
@@ -53,8 +81,9 @@ const OTPVerification = () => {
     
     try {
       const { data, error } = await supabase.auth.verifyOtp({
+        email,
         token: otp,
-        type: 'email',
+        type: 'email'
       });
       
       if (error) {
@@ -66,6 +95,8 @@ const OTPVerification = () => {
           title: 'Verification Successful',
           description: 'Your email has been verified.',
         });
+        
+        localStorage.removeItem('verificationEmail');
         
         navigate('/dashboard');
       }
@@ -84,22 +115,20 @@ const OTPVerification = () => {
   
   const handleResendOTP = async () => {
     if (!canResend) return;
+    if (!email) {
+      setError('Email not found. Please go back to login page.');
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
     
     try {
-      // Get email from session
-      const { data: sessionData } = await supabase.auth.getSession();
-      const email = sessionData.session?.user.email;
-      
-      if (!email) {
-        throw new Error('No email found. Please go back and log in again.');
-      }
-      
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
+      const { error } = await supabase.auth.signInWithOtp({
         email,
+        options: {
+          shouldCreateUser: false
+        }
       });
       
       if (error) {
@@ -111,7 +140,6 @@ const OTPVerification = () => {
         description: 'A new verification code has been sent to your email.',
       });
       
-      // Reset timer
       setTimeLeft(60);
       setCanResend(false);
     } catch (err: any) {
@@ -138,7 +166,7 @@ const OTPVerification = () => {
             </div>
             <h1 className="text-3xl font-bold mb-2">Verify Your Email</h1>
             <p className="text-gray-500 dark:text-gray-400">
-              Please enter the verification code sent to your email
+              Please enter the verification code sent to {email ? email : 'your email'}
             </p>
           </div>
         </SlideIn>
