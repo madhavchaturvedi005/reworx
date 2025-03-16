@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Integration from "./pages/Integration";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import OTPVerification from "./pages/OTPVerification";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,8 @@ const AppRoutes = () => {
         </PublicRoute>
       } />
       <Route path="/login" element={<Login />} />
+      <Route path="/otp-verification" element={<OTPVerification />} />
+      <Route path="/auth/callback" element={<Navigate to="/dashboard" replace />} />
       <Route path="/home" element={
         <ProtectedRoute>
           <Home />

@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth from Supabase...');
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -55,54 +56,100 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const { user: supabaseUser } = session;
           
           if (supabaseUser) {
+            console.log('User found in session:', supabaseUser.id);
             // Get user's profile from 'profiles' table
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', supabaseUser.id)
-              .single();
+            let userName = supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '';
+            
+            try {
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', supabaseUser.id)
+                .single();
+              
+              if (profileError && profileError.code !== 'PGRST116') {
+                console.error('Error fetching profile:', profileError);
+              }
+              
+              if (profile) {
+                userName = profile.name || userName;
+              } else {
+                // Create a profile if it doesn't exist
+                const { error: insertError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: supabaseUser.id,
+                    name: userName,
+                    email: supabaseUser.email,
+                  });
+                
+                if (insertError) {
+                  console.error('Error creating profile:', insertError);
+                }
+              }
+            } catch (error) {
+              console.error('Error in profile check:', error);
+            }
             
             setIsAuthenticated(true);
             setUser({
               id: supabaseUser.id,
-              name: profile?.name || supabaseUser.email?.split('@')[0] || '',
+              name: userName,
               email: supabaseUser.email || '',
             });
             
             // Get user's score from 'scores' table
-            const { data: scoreData } = await supabase
-              .from('scores')
-              .select('*')
-              .eq('user_id', supabaseUser.id)
-              .single();
-            
-            if (scoreData) {
-              setUserScore({
-                score: scoreData.score,
-                level: scoreData.level,
-                masterKey: scoreData.master_key,
-                orderHistory: JSON.parse(scoreData.order_history),
-                platforms: JSON.parse(scoreData.platforms),
-              });
-            } else {
-              // Generate a new score if none exists
-              const newScore = generateRandomScore();
-              const newMasterKey = createNewMasterKey();
-              newScore.masterKey = newMasterKey;
+            try {
+              const { data: scoreData, error: scoreError } = await supabase
+                .from('scores')
+                .select('*')
+                .eq('user_id', supabaseUser.id)
+                .single();
               
-              // Insert new score into database
-              await supabase.from('scores').insert({
-                user_id: supabaseUser.id,
-                score: newScore.score,
-                level: newScore.level,
-                master_key: newMasterKey,
-                order_history: JSON.stringify(newScore.orderHistory),
-                platforms: JSON.stringify(newScore.platforms),
-              });
+              if (scoreError && scoreError.code !== 'PGRST116') {
+                console.error('Error fetching score:', scoreError);
+              }
               
-              setUserScore(newScore);
+              if (scoreData) {
+                setUserScore({
+                  score: scoreData.score,
+                  level: scoreData.level,
+                  masterKey: scoreData.master_key,
+                  orderHistory: typeof scoreData.order_history === 'string' 
+                    ? JSON.parse(scoreData.order_history) 
+                    : scoreData.order_history,
+                  platforms: typeof scoreData.platforms === 'string' 
+                    ? JSON.parse(scoreData.platforms) 
+                    : scoreData.platforms,
+                });
+              } else {
+                // Generate a new score if none exists
+                const newScore = generateRandomScore();
+                const newMasterKey = createNewMasterKey();
+                newScore.masterKey = newMasterKey;
+                
+                // Insert new score into database
+                const { error: insertScoreError } = await supabase.from('scores').insert({
+                  user_id: supabaseUser.id,
+                  score: newScore.score,
+                  level: newScore.level,
+                  master_key: newMasterKey,
+                  order_history: JSON.stringify(newScore.orderHistory),
+                  platforms: JSON.stringify(newScore.platforms),
+                });
+                
+                if (insertScoreError) {
+                  console.error('Error creating score:', insertScoreError);
+                } else {
+                  setUserScore(newScore);
+                }
+              }
+            } catch (error) {
+              console.error('Error in score check:', error);
             }
           }
+        } else {
+          console.log('No active session found');
         }
         
         // Mark loading as complete
@@ -116,42 +163,94 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Setup auth change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         if (event === 'SIGNED_IN' && session) {
           const { user: supabaseUser } = session;
           
           if (supabaseUser) {
-            // Get user's profile from 'profiles' table
-            const { data: profile } = await supabase
+            console.log('User signed in:', supabaseUser.id);
+            // Get user's name from metadata or email
+            let userName = supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '';
+            
+            // Check if profile exists
+            const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', supabaseUser.id)
               .single();
             
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.error('Error fetching profile on sign in:', profileError);
+            }
+            
+            if (profile) {
+              userName = profile.name || userName;
+            } else {
+              // Create a profile if it doesn't exist
+              const { error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: supabaseUser.id,
+                  name: userName,
+                  email: supabaseUser.email,
+                });
+              
+              if (insertError) {
+                console.error('Error creating profile on sign in:', insertError);
+              }
+            }
+            
             setIsAuthenticated(true);
             setUser({
               id: supabaseUser.id,
-              name: profile?.name || supabaseUser.email?.split('@')[0] || '',
+              name: userName,
               email: supabaseUser.email || '',
             });
             
             // Get user's score
-            const { data: scoreData } = await supabase
+            const { data: scoreData, error: scoreError } = await supabase
               .from('scores')
               .select('*')
               .eq('user_id', supabaseUser.id)
               .single();
+            
+            if (scoreError && scoreError.code !== 'PGRST116') {
+              console.error('Error fetching score on sign in:', scoreError);
+            }
             
             if (scoreData) {
               setUserScore({
                 score: scoreData.score,
                 level: scoreData.level,
                 masterKey: scoreData.master_key,
-                orderHistory: JSON.parse(scoreData.order_history),
-                platforms: JSON.parse(scoreData.platforms),
+                orderHistory: typeof scoreData.order_history === 'string' 
+                  ? JSON.parse(scoreData.order_history) 
+                  : scoreData.order_history,
+                platforms: typeof scoreData.platforms === 'string' 
+                  ? JSON.parse(scoreData.platforms) 
+                  : scoreData.platforms,
               });
+            } else {
+              // Generate new score if none exists
+              const newScore = generateRandomScore();
+              const newMasterKey = createNewMasterKey();
+              newScore.masterKey = newMasterKey;
+              
+              // Insert new score
+              await supabase.from('scores').insert({
+                user_id: supabaseUser.id,
+                score: newScore.score,
+                level: newScore.level,
+                master_key: newMasterKey,
+                order_history: JSON.stringify(newScore.orderHistory),
+                platforms: JSON.stringify(newScore.platforms),
+              });
+              
+              setUserScore(newScore);
             }
           }
         } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           setIsAuthenticated(false);
           setUser(null);
           setUserScore(null);
@@ -172,25 +271,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('Signup attempt:', { email, name });
       
-      // First, check if user already exists
-      const { data: existingUser, error: existingUserError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', email)
-        .single();
-      
-      if (existingUserError && existingUserError.code !== 'PGRST116') {
-        console.error('Error checking existing user:', existingUserError);
-      }
-      
-      if (existingUser) {
-        return { success: false, errorMessage: 'User with this email already exists' };
-      }
-      
-      // Attempt to sign up
+      // Attempt to sign up with Supabase
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            name,
+          },
+        },
       });
       
       if (error) {
