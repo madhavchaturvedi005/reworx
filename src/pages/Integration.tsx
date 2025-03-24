@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { availablePlatforms, Platform, extractOrdersFromGmail, processGmailOrderData } from '@/utils/trustScore';
 import Navbar from '@/components/layout/Navbar';
@@ -6,13 +5,13 @@ import Footer from '@/components/layout/Footer';
 import PlatformIntegrationCard from '@/components/ui/trust-score/PlatformIntegrationCard';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Search, Mail } from 'lucide-react';
+import { AlertCircle, Search, Mail, ClipboardList } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PlatformRequestForm from '@/components/home/PlatformRequestForm';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Integration = () => {
   const [platforms, setPlatforms] = useState<Platform[]>(availablePlatforms);
@@ -21,6 +20,7 @@ const Integration = () => {
   const [gmailOrdersCount, setGmailOrdersCount] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Handle connect platform
   const handleConnectPlatform = async (platform: Platform) => {
@@ -96,6 +96,17 @@ const Integration = () => {
               </p>
             </div>
           </SlideIn>
+          
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/orders')}
+              className="flex items-center gap-2"
+            >
+              <ClipboardList className="w-4 h-4" />
+              Order History
+            </Button>
+          </div>
           
           <FadeIn delay={200} className="mb-8">
             <div className="relative max-w-md">

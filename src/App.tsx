@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,9 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import OTPVerification from "./pages/OTPVerification";
 import NotFound from "./pages/NotFound";
+import GmailIntegration from '@/components/GmailIntegration';
+import GmailCallback from '@/components/GmailCallback';
+import OrderHistoryPage from '@/pages/OrderHistoryPage';
 
 const queryClient = new QueryClient();
 
@@ -94,6 +96,13 @@ const AppRoutes = () => {
       <Route path="/settings" element={
         <ProtectedRoute>
           <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/integration/gmail" element={<GmailIntegration />} />
+      <Route path="/auth/gmail/callback" element={<GmailCallback />} />
+      <Route path="/orders" element={
+        <ProtectedRoute>
+          <OrderHistoryPage />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />
