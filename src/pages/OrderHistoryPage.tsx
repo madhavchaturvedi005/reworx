@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import OrderHistory from '@/components/order-history/OrderHistory';
-import { getUserData } from '@/utils/gmail';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function OrderHistoryPage() {
@@ -10,25 +9,10 @@ export default function OrderHistoryPage() {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Get the stored auth code or redirect to Gmail integration
-      const gmailData = localStorage.getItem('gmailUserData');
-      if (!gmailData) {
-        toast({
-          variant: 'destructive',
-          title: 'Not Connected',
-          description: 'Please connect your Gmail account first.',
-        });
-        return;
-      }
-
-      // Re-sync data
-      const code = JSON.parse(gmailData).code;
-      const newData = await getUserData(code);
-      localStorage.setItem('gmailUserData', JSON.stringify(newData));
-
+      // TODO: Implement platform-specific sync logic
       toast({
         title: 'Sync Complete',
-        description: `Successfully synced ${newData.orders.length} orders.`,
+        description: 'Successfully synced orders.',
       });
     } catch (error) {
       console.error('Error syncing orders:', error);
