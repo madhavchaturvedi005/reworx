@@ -1,245 +1,233 @@
 export interface Platform {
   id: string;
   name: string;
-  logo: string;
-  connected: boolean;
-  lastSynced?: string;
+  icon: string;
+  description: string;
+  isConnected: boolean;
+  connectedAt?: string;
+  lastSync?: string;
+  orderCount?: number;
+  totalSpent?: number;
+  averageOrderValue?: number;
+  lastOrderDate?: string;
+  orderFrequency?: string;
+  platformScore?: number;
+  status: 'active' | 'pending' | 'error';
+  error?: string;
 }
 
 export interface OrderHistory {
-  total: number;
-  accepted: number;
-  cancelled: number;
-  rejected: number;
-}
-
-export interface UserScore {
-  score: number;
-  level: 'low' | 'medium' | 'high';
-  orderHistory: OrderHistory;
-  platforms: Platform[];
-  masterKey?: string;
-}
-
-export interface GmailOrderData {
-  orderId: string;
-  merchant: string;
-  amount: number;
+  id: string;
+  platform: string;
+  orderNumber: string;
   date: string;
-  status: 'delivered' | 'cancelled' | 'returned' | 'processing';
-  products: Array<{
+  amount: number;
+  status: string;
+  items: Array<{
     name: string;
     quantity: number;
     price: number;
   }>;
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  paymentMethod: string;
+  trackingNumber?: string;
+  estimatedDelivery?: string;
+  notes?: string;
 }
 
-// Demo platforms
+export interface UserScore {
+  score: number;
+  level: string;
+  platforms: {
+    [key: string]: {
+      connected: boolean;
+      connectedAt?: string;
+      lastSync?: string;
+      orderCount?: number;
+      totalSpent?: number;
+      averageOrderValue?: number;
+      lastOrderDate?: string;
+      orderFrequency?: string;
+      platformScore?: number;
+    };
+  };
+  badges: string[];
+  achievements: string[];
+  lastUpdated: string;
+}
+
+// Demo data for available platforms
 export const availablePlatforms: Platform[] = [
   {
     id: 'amazon',
     name: 'Amazon',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png',
-    connected: true,
-    lastSynced: new Date().toISOString(),
+    icon: 'amazon',
+    description: 'Connect your Amazon account to track orders and spending',
+    isConnected: false,
+    status: 'pending'
   },
   {
     id: 'flipkart',
     name: 'Flipkart',
-    logo: 'https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Emblem.png',
-    connected: false,
-  },
-  {
-    id: 'meesho',
-    name: 'Meesho',
-    logo: 'https://www.meesho.com/favicon.ico',
-    connected: false,
+    icon: 'flipkart',
+    description: 'Track your Flipkart orders and analyze spending patterns',
+    isConnected: false,
+    status: 'pending'
   },
   {
     id: 'myntra',
     name: 'Myntra',
-    logo: 'https://logolook.net/wp-content/uploads/2023/01/Myntra-Emblem-2048x1152.png',
-    connected: false,
+    icon: 'myntra',
+    description: 'Monitor your Myntra fashion orders and track spending',
+    isConnected: false,
+    status: 'pending'
   },
   {
-    id: 'gmail',
-    name: 'Gmail',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/2560px-Gmail_icon_%282020%29.svg.png',
-    connected: false,
+    id: 'ajio',
+    name: 'AJIO',
+    icon: 'ajio',
+    description: 'Connect AJIO to track your fashion and lifestyle orders',
+    isConnected: false,
+    status: 'pending'
   },
+  {
+    id: 'meesho',
+    name: 'Meesho',
+    icon: 'meesho',
+    description: 'Track your Meesho orders and analyze shopping patterns',
+    isConnected: false,
+    status: 'pending'
+  }
 ];
 
-// Calculate score level
-export const getScoreLevel = (score: number): 'low' | 'medium' | 'high' => {
-  if (score < 50) return 'low';
-  if (score < 75) return 'medium';
-  return 'high';
-};
+export function getScoreLevel(score: number): string {
+  if (score >= 1000) return 'Master';
+  if (score >= 800) return 'Expert';
+  if (score >= 600) return 'Pro';
+  if (score >= 400) return 'Advanced';
+  if (score >= 200) return 'Intermediate';
+  return 'Beginner';
+}
 
-// Generate a random score
-export const generateRandomScore = (): UserScore => {
-  // Random score between 20 and 95
-  const score = Math.floor(Math.random() * 75) + 20;
-  
-  // Demo order history
-  const total = Math.floor(Math.random() * 30) + 10;
-  const accepted = Math.floor(total * 0.7) + Math.floor(Math.random() * 5);
-  const cancelled = Math.floor((total - accepted) * 0.7);
-  const rejected = total - accepted - cancelled;
-  
-  // Only Amazon connected in the demo
-  const connectedPlatforms = availablePlatforms.map(platform => ({
-    ...platform,
-    connected: platform.id === 'amazon'
-  }));
-  
-  return {
-    score,
-    level: getScoreLevel(score),
-    orderHistory: {
-      total,
-      accepted,
-      cancelled,
-      rejected
-    },
-    platforms: connectedPlatforms,
-    masterKey: score > 40 ? 'D!S4A-2003-EFGH' : undefined,
-  };
-};
+export function generateRandomScore(): number {
+  return Math.floor(Math.random() * 1000);
+}
 
-// Generate a master key
-export const generateMasterKey = (): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let key = '';
+export function generateMasterKey(): string {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
+}
+
+export function calculatePlatformScore(platform: Platform): number {
+  let score = 0;
   
-  // Format: XXXX-XXXX-XXXX
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 4; j++) {
-      key += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    if (i < 2) key += '-';
+  // Base score for connection
+  if (platform.isConnected) {
+    score += 50;
   }
   
-  return key;
-};
-
-// Create a new master key
-export const createNewMasterKey = (): string => {
-  return generateMasterKey();
-};
-
-// Get user score (simulated)
-export const getUserScore = (): UserScore => {
-  return generateRandomScore();
-};
-
-// Gmail OAuth URL generation with real client ID (to be updated)
-export const generateGmailOAuthUrl = (): string => {
-  // In a real implementation, this would create a proper OAuth URL with your client ID
-  const clientId = "your-google-client-id"; // Replace with your actual Google client ID
-  const redirectUri = encodeURIComponent(window.location.origin + "/auth/gmail/callback");
-  const scope = encodeURIComponent("https://www.googleapis.com/auth/gmail.readonly");
-  
-  return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
-};
-
-// Mock function to simulate Gmail data extraction
-export const extractOrdersFromGmail = async (authCode: string): Promise<GmailOrderData[]> => {
-  // In a real implementation, this would:
-  // 1. Exchange the auth code for tokens
-  // 2. Use the tokens to fetch emails from Gmail API
-  // 3. Parse the emails to extract order data
-  
-  // For demo purposes, we're returning mock data
-  console.log("Extracting orders with auth code:", authCode);
-  
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  return [
-    {
-      orderId: "OD12345678",
-      merchant: "Amazon",
-      amount: 1299.99,
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "delivered",
-      products: [
-        { name: "Wireless Earbuds", quantity: 1, price: 1299.99 }
-      ]
-    },
-    {
-      orderId: "FK987654321",
-      merchant: "Flipkart",
-      amount: 24999.00,
-      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "delivered",
-      products: [
-        { name: "Smartphone", quantity: 1, price: 24999.00 }
-      ]
-    },
-    {
-      orderId: "MEE112233",
-      merchant: "Meesho",
-      amount: 599.00,
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "processing",
-      products: [
-        { name: "T-shirt", quantity: 2, price: 299.50 }
-      ]
-    },
-    {
-      orderId: "MYN445566",
-      merchant: "Myntra",
-      amount: 3499.00,
-      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      status: "returned",
-      products: [
-        { name: "Sneakers", quantity: 1, price: 3499.00 }
-      ]
-    }
-  ];
-};
-
-// Connect Gmail Account
-export const connectGmailAccount = async (): Promise<boolean> => {
-  try {
-    // In a real implementation, this would redirect to the OAuth URL
-    // and handle the callback with the auth code
-    
-    // For demo purposes, we'll simulate a successful connection
-    const authUrl = generateGmailOAuthUrl();
-    
-    // In a real implementation, this would open the authUrl in a popup or redirect
-    console.log("Redirecting to:", authUrl);
-    
-    // Simulate a successful connection
-    return true;
-  } catch (error) {
-    console.error("Error connecting Gmail:", error);
-    return false;
+  // Order count contribution
+  if (platform.orderCount) {
+    score += Math.min(platform.orderCount * 2, 200);
   }
-};
-
-// Process Gmail Order Data to update score
-export const processGmailOrderData = (orderData: GmailOrderData[]): OrderHistory => {
-  const result = {
-    total: orderData.length,
-    accepted: 0,
-    cancelled: 0,
-    rejected: 0
-  };
   
-  // Count by status
-  orderData.forEach(order => {
-    if (order.status === 'delivered') {
-      result.accepted++;
-    } else if (order.status === 'cancelled') {
-      result.cancelled++;
-    } else if (order.status === 'returned') {
-      result.rejected++;
+  // Total spent contribution
+  if (platform.totalSpent) {
+    score += Math.min(platform.totalSpent / 100, 200);
+  }
+  
+  // Order frequency contribution
+  if (platform.orderFrequency) {
+    const frequency = platform.orderFrequency.toLowerCase();
+    if (frequency.includes('daily')) score += 100;
+    else if (frequency.includes('weekly')) score += 75;
+    else if (frequency.includes('monthly')) score += 50;
+    else if (frequency.includes('quarterly')) score += 25;
+  }
+  
+  // Last order recency
+  if (platform.lastOrderDate) {
+    const lastOrder = new Date(platform.lastOrderDate);
+    const now = new Date();
+    const monthsSinceLastOrder = (now.getTime() - lastOrder.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    
+    if (monthsSinceLastOrder < 1) score += 50;
+    else if (monthsSinceLastOrder < 3) score += 30;
+    else if (monthsSinceLastOrder < 6) score += 20;
+    else if (monthsSinceLastOrder < 12) score += 10;
+  }
+  
+  return Math.min(score, 500);
+}
+
+export function calculateUserScore(userScore: UserScore): number {
+  let totalScore = 0;
+  
+  // Base score for each connected platform
+  Object.values(userScore.platforms).forEach(platform => {
+    if (platform.connected) {
+      totalScore += 100;
     }
-    // 'processing' orders are counted in total but not in other categories
   });
   
-  return result;
-};
+  // Platform-specific scores
+  Object.values(userScore.platforms).forEach(platform => {
+    if (platform.platformScore) {
+      totalScore += platform.platformScore;
+    }
+  });
+  
+  // Badge and achievement bonuses
+  totalScore += userScore.badges.length * 50;
+  totalScore += userScore.achievements.length * 100;
+  
+  return totalScore;
+}
+
+export function generateUserScore(): UserScore {
+  const platforms = availablePlatforms.reduce((acc, platform) => {
+    acc[platform.id] = {
+      connected: false,
+      status: 'pending'
+    };
+    return acc;
+  }, {} as UserScore['platforms']);
+
+  return {
+    score: 0,
+    level: 'Beginner',
+    platforms,
+    badges: [],
+    achievements: [],
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+export function updateUserScore(
+  currentScore: UserScore,
+  platformId: string,
+  platformData: Partial<Platform>
+): UserScore {
+  const updatedScore = { ...currentScore };
+  
+  // Update platform data
+  if (updatedScore.platforms[platformId]) {
+    updatedScore.platforms[platformId] = {
+      ...updatedScore.platforms[platformId],
+      ...platformData
+    };
+  }
+  
+  // Recalculate total score
+  updatedScore.score = calculateUserScore(updatedScore);
+  updatedScore.level = getScoreLevel(updatedScore.score);
+  updatedScore.lastUpdated = new Date().toISOString();
+  
+  return updatedScore;
+}

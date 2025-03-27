@@ -12,8 +12,6 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import OTPVerification from "./pages/OTPVerification";
 import NotFound from "./pages/NotFound";
-import GmailIntegration from '@/components/GmailIntegration';
-import GmailCallback from '@/components/GmailCallback';
 import OrderHistoryPage from '@/pages/OrderHistoryPage';
 
 const queryClient = new QueryClient();
@@ -60,70 +58,35 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => {
-  const { isLoading } = useAuth();
-  
-  // Show global loading state if auth is still initializing
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-  
-  return (
-    <Routes>
-      <Route path="/" element={
-        <PublicRoute>
-          <Index />
-        </PublicRoute>
-      } />
-      <Route path="/login" element={<Login />} />
-      <Route path="/otp-verification" element={<OTPVerification />} />
-      <Route path="/auth/callback" element={<Navigate to="/dashboard" replace />} />
-      <Route path="/home" element={
-        <ProtectedRoute>
-          <Home />
-        </ProtectedRoute>
-      } />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/integration" element={
-        <ProtectedRoute>
-          <Integration />
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
-      } />
-      <Route path="/integration/gmail" element={<GmailIntegration />} />
-      <Route path="/auth/gmail/callback" element={<GmailCallback />} />
-      <Route path="/orders" element={
-        <ProtectedRoute>
-          <OrderHistoryPage />
-        </ProtectedRoute>
-      } />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
-
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
+      <AuthProvider>
+        <BrowserRouter>
           <TooltipProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<PublicRoute><Index /></PublicRoute>} />
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/verify-otp" element={<PublicRoute><OTPVerification /></PublicRoute>} />
+              
+              {/* Protected Routes */}
+              <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/integration" element={<ProtectedRoute><Integration /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/order-history" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
+              
+              {/* Catch all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
             <Toaster />
             <Sonner />
-            <AppRoutes />
           </TooltipProvider>
-        </AuthProvider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
