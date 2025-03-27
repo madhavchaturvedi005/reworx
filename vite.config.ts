@@ -19,18 +19,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'google-api': ['googleapis', 'google-auth-library'],
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
-        }
-      }
-    },
-    chunkSizeWarningLimit: 1000,
-  },
-  optimizeDeps: {
-    exclude: ['googleapis', 'google-auth-library']
-  }
 }));
