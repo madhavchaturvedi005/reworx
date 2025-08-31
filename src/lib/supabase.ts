@@ -10,10 +10,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Check connection to Supabase
 (async () => {
   try {
-    // Test the connection with a simple query
-    const { data, error } = await supabase.from('login').select('count').limit(1);
+    // Test the connection with a simple query to profiles table
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
     if (error) {
-      console.error('Supabase connection error (login table):', error.message);
+      console.error('Supabase connection error:', error.message);
     } else {
       console.log('Supabase connection successful');
     }

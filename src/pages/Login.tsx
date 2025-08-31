@@ -1,16 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { Eye, EyeOff, LogIn, Smartphone, UserPlus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff, LogIn, UserPlus, Smartphone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import FadeIn from '@/components/ui/animations/FadeIn';
 import SlideIn from '@/components/ui/animations/SlideIn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   // Login states
@@ -32,7 +32,14 @@ const Login = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login, signup, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
   
   if (authLoading) {
     return (
@@ -57,7 +64,6 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Use Supabase directly for login with email OTP option
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -67,15 +73,12 @@ const Login = () => {
         throw error;
       }
       
-      if (data && data.session) {
+      if (data.session) {
         toast({
           title: 'Login Successful',
           description: 'Welcome back to Reworx!',
         });
-        
         navigate('/dashboard');
-      } else {
-        setError('Something went wrong. Please try again.');
       }
     } catch (err: any) {
       console.error('Login error:', err);
@@ -112,12 +115,11 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Use Supabase directly for signup
       const { data, error } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             name: signupName,
           },
@@ -128,15 +130,15 @@ const Login = () => {
         throw error;
       }
       
-      if (data) {
-        toast({
-          title: 'Verification Email Sent',
-          description: 'Please check your email for a verification link.',
-        });
-        
-        // Redirect to OTP verification page
-        navigate('/otp-verification');
-      }
+      toast({
+        title: 'Account Created Successfully',
+        description: 'You can now sign in with your credentials.',
+      });
+      
+      // Switch to login form
+      setIsSigningUp(false);
+      setEmail(signupEmail);
+      
     } catch (err: any) {
       console.error('Signup error:', err);
       setSignupError(err.message || 'Failed to create account. Please try again.');
@@ -162,13 +164,10 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Store email in localStorage for OTP verification
-      localStorage.setItem('verificationEmail', email);
-      
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false // Don't create a new user if one doesn't exist
+          shouldCreateUser: false
         }
       });
       
@@ -181,7 +180,6 @@ const Login = () => {
         description: 'Please check your email for a verification code.',
       });
       
-      // Redirect to OTP verification page
       navigate('/otp-verification');
     } catch (err: any) {
       console.error('OTP login error:', err);
