@@ -126,6 +126,7 @@ export function generateMasterKey(): string {
 }
 
 export function createNewMasterKey(): string {
+  // Generate a random master key
   return Math.random().toString(36).substring(2, 15) + 
          Math.random().toString(36).substring(2, 15);
 }
