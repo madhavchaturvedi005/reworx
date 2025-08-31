@@ -44,6 +44,11 @@ export interface OrderHistory {
 export interface UserScore {
   score: number;
   level: string;
+  masterKey?: string;
+  orderHistory: {
+    total: number;
+    recent: OrderHistory[];
+  };
   platforms: {
     [key: string]: {
       connected: boolean;
@@ -115,11 +120,12 @@ export function getScoreLevel(score: number): string {
   return 'Beginner';
 }
 
-export function generateRandomScore(): number {
-  return Math.floor(Math.random() * 1000);
+export function generateMasterKey(): string {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
 }
 
-export function generateMasterKey(): string {
+export function createNewMasterKey(): string {
   return Math.random().toString(36).substring(2, 15) + 
          Math.random().toString(36).substring(2, 15);
 }
@@ -193,8 +199,7 @@ export function calculateUserScore(userScore: UserScore): number {
 export function generateUserScore(): UserScore {
   const platforms = availablePlatforms.reduce((acc, platform) => {
     acc[platform.id] = {
-      connected: false,
-      status: 'pending'
+      connected: false
     };
     return acc;
   }, {} as UserScore['platforms']);
@@ -202,6 +207,33 @@ export function generateUserScore(): UserScore {
   return {
     score: 0,
     level: 'Beginner',
+    orderHistory: {
+      total: 0,
+      recent: []
+    },
+    platforms,
+    badges: [],
+    achievements: [],
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+export function generateRandomScore(): UserScore {
+  const score = Math.floor(Math.random() * 1000);
+  const platforms = availablePlatforms.reduce((acc, platform) => {
+    acc[platform.id] = {
+      connected: false
+    };
+    return acc;
+  }, {} as UserScore['platforms']);
+
+  return {
+    score,
+    level: getScoreLevel(score),
+    orderHistory: {
+      total: Math.floor(Math.random() * 50),
+      recent: []
+    },
     platforms,
     badges: [],
     achievements: [],

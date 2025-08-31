@@ -33,34 +33,20 @@ const Dashboard = () => {
     }, 1500);
   };
   
-  // Handle connect platform (updates UI but keeps the same base score)
-  const handleConnectPlatform = (platform: any) => {
-    if (userScore) {
-      const updatedPlatforms = userScore.platforms.map(p => 
-        p.id === platform.id ? { ...p, connected: true, lastSynced: new Date().toISOString() } : p
-      );
-      
-      // This doesn't actually change the persistent score in AuthContext
-      toast({
-        title: 'Platform Connected',
-        description: `Successfully connected to ${platform.name}.`,
-      });
-    }
+  // Handle connect platform
+  const handleConnectPlatform = (platformId: string) => {
+    toast({
+      title: 'Platform Connected',
+      description: `Successfully connected to platform.`,
+    });
   };
   
-  // Handle disconnect platform (updates UI but keeps the same base score)
-  const handleDisconnectPlatform = (platform: any) => {
-    if (userScore) {
-      const updatedPlatforms = userScore.platforms.map(p => 
-        p.id === platform.id ? { ...p, connected: false, lastSynced: undefined } : p
-      );
-      
-      // This doesn't actually change the persistent score in AuthContext
-      toast({
-        title: 'Platform Disconnected',
-        description: `Successfully disconnected from ${platform.name}.`,
-      });
-    }
+  // Handle disconnect platform  
+  const handleDisconnectPlatform = (platformId: string) => {
+    toast({
+      title: 'Platform Disconnected',
+      description: `Successfully disconnected from platform.`,
+    });
   };
   
   // Handle master key change
@@ -141,15 +127,9 @@ const Dashboard = () => {
                   </h3>
                   
                   <div className="space-y-3">
-                    {userScore.platforms.map((platform, index) => (
-                      <FadeIn key={platform.id} delay={index * 100}>
-                        <PlatformIntegrationCard 
-                          platform={platform}
-                          onConnect={handleConnectPlatform}
-                          onDisconnect={handleDisconnectPlatform}
-                        />
-                      </FadeIn>
-                    ))}
+                    <p className="text-sm text-muted-foreground">
+                      Platform integrations will be displayed here once connected.
+                    </p>
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">

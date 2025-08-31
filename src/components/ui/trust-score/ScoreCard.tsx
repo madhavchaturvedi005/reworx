@@ -25,30 +25,42 @@ const ScoreCard = ({ score, className, onRefresh }: ScoreCardProps) => {
   const { toast } = useToast();
 
   // Get color based on score level
-  const getScoreColor = (level: 'low' | 'medium' | 'high') => {
-    switch (level) {
-      case 'low':
+  const getScoreColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'beginner':
         return 'text-red-500';
-      case 'medium':
+      case 'intermediate':
         return 'text-yellow-500';
-      case 'high':
-        return 'text-green-500';
-      default:
+      case 'advanced':
         return 'text-blue-500';
+      case 'pro':
+        return 'text-green-500';
+      case 'expert':
+        return 'text-purple-500';
+      case 'master':
+        return 'text-gold-500';
+      default:
+        return 'text-gray-500';
     }
   };
 
   // Get background color based on score level
-  const getScoreBgColor = (level: 'low' | 'medium' | 'high') => {
-    switch (level) {
-      case 'low':
+  const getScoreBgColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'beginner':
         return 'bg-red-100 dark:bg-red-950/30';
-      case 'medium':
+      case 'intermediate':
         return 'bg-yellow-100 dark:bg-yellow-950/30';
-      case 'high':
-        return 'bg-green-100 dark:bg-green-950/30';
-      default:
+      case 'advanced':
         return 'bg-blue-100 dark:bg-blue-950/30';
+      case 'pro':
+        return 'bg-green-100 dark:bg-green-950/30';
+      case 'expert':
+        return 'bg-purple-100 dark:bg-purple-950/30';
+      case 'master':
+        return 'bg-amber-100 dark:bg-amber-950/30';
+      default:
+        return 'bg-gray-100 dark:bg-gray-950/30';
     }
   };
 

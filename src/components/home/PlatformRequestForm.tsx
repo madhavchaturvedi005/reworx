@@ -37,6 +37,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface PlatformRequestFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onClose?: () => void;
 }
 
 const PlatformRequestForm = ({ open, onOpenChange }: PlatformRequestFormProps) => {

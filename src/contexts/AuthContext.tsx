@@ -121,6 +121,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   platforms: typeof scoreData.platforms === 'string' 
                     ? JSON.parse(scoreData.platforms) 
                     : scoreData.platforms,
+                  badges: [],
+                  achievements: [],
+                  lastUpdated: new Date().toISOString()
                 });
               } else {
                 // Generate a new score if none exists
@@ -229,6 +232,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 platforms: typeof scoreData.platforms === 'string' 
                   ? JSON.parse(scoreData.platforms) 
                   : scoreData.platforms,
+                badges: [],
+                achievements: [],
+                lastUpdated: new Date().toISOString()
               });
             } else {
               // Generate new score if none exists

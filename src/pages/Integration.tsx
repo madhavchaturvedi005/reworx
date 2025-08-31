@@ -122,7 +122,11 @@ const Integration = () => {
               Let us know which platform you'd like to integrate with.
             </DialogDescription>
           </DialogHeader>
-          <PlatformRequestForm onClose={() => setFormOpen(false)} />
+          <PlatformRequestForm 
+            open={formOpen} 
+            onOpenChange={setFormOpen}
+            onClose={() => setFormOpen(false)} 
+          />
         </DialogContent>
       </Dialog>
     </div>

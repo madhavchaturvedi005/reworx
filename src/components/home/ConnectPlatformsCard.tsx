@@ -9,8 +9,8 @@ const ConnectPlatformsCard = () => {
   const navigate = useNavigate();
   
   // Get connected and unconnected platforms
-  const connectedPlatforms = availablePlatforms.filter(platform => platform.connected);
-  const unconnectedPlatforms = availablePlatforms.filter(platform => !platform.connected);
+  const connectedPlatforms = availablePlatforms.filter(platform => platform.isConnected);
+  const unconnectedPlatforms = availablePlatforms.filter(platform => !platform.isConnected);
   
   return (
     <Card>
@@ -28,16 +28,16 @@ const ConnectPlatformsCard = () => {
                 <div key={platform.id} className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-white rounded-full p-1 flex-shrink-0 overflow-hidden shadow-sm">
                     <img 
-                      src={platform.logo} 
+                      src={`/lovable-uploads/${platform.icon}.png`} 
                       alt={platform.name} 
                       className="w-full h-full object-contain"
                     />
                   </div>
                   <div>
                     <p className="font-medium text-sm">{platform.name}</p>
-                    {platform.lastSynced && (
+                    {platform.lastSync && (
                       <p className="text-xs text-muted-foreground">
-                        Last synced: {new Date(platform.lastSynced).toLocaleDateString()}
+                        Last synced: {new Date(platform.lastSync).toLocaleDateString()}
                       </p>
                     )}
                   </div>
@@ -60,7 +60,7 @@ const ConnectPlatformsCard = () => {
                     className="w-8 h-8 bg-white rounded-full p-1 flex-shrink-0 overflow-hidden shadow-sm opacity-60"
                   >
                     <img 
-                      src={platform.logo} 
+                      src={`/lovable-uploads/${platform.icon}.png`} 
                       alt={platform.name} 
                       className="w-full h-full object-contain"
                     />
